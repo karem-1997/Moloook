@@ -3,77 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام ملوك الروقان - الإصدار الاحترافي</title>
+    <title>لوحة تحكم ملوك الروقان v4.0</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
         :root { --gold: #d4af37; --bg: #0d0d0d; --card: #151515; }
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .container { background: var(--card); border: 2px solid var(--gold); border-radius: 25px; padding: 20px; width: 100%; max-width: 500px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        #adminPanel { display: none; position: absolute; inset: 0; background: #000; border: 3px solid var(--gold); border-radius: 25px; z-index: 1000; padding: 20px; overflow-y: auto; }
-        .admin-section { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; }
-        .admin-input { width: 100%; padding: 10px; margin-bottom: 5px; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .container { background: var(--card); border: 2px solid var(--gold); border-radius: 20px; padding: 20px; width: 100%; max-width: 500px; position: relative; box-shadow: 0 0 20px rgba(212,175,55,0.2); }
+        #adminPanel { display: none; position: absolute; inset: 0; background: #000; border: 2px solid var(--gold); border-radius: 20px; z-index: 9999; padding: 20px; overflow-y: auto; }
+        .admin-box { background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; margin-bottom: 12px; }
+        .admin-box h4 { color: var(--gold); margin: 0 0 10px 0; border-bottom: 1px solid #333; font-size: 16px; }
+        .admin-input { width: 100%; padding: 10px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; }
         .header { text-align: center; margin-bottom: 15px; cursor: pointer; }
-        .header h1 { color: var(--gold); margin: 0; font-size: 24px; }
-        .info-box { border: 2px dashed var(--gold); border-radius: 15px; padding: 10px; text-align: center; margin-bottom: 15px; background: rgba(212, 175, 55, 0.05); }
-        .input-group { margin-bottom: 12px; text-align: right; }
-        label { display: block; margin-bottom: 5px; color: var(--gold); font-size: 14px; }
-        input, select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
-        .result-box { background: linear-gradient(135deg, #bf953f, #fcf6ba); color: #000; padding: 12px; border-radius: 12px; text-align: center; font-weight: 900; font-size: 18px; margin: 10px 0; }
-        .btn-main { width: 100%; padding: 15px; background: var(--gold); border: none; border-radius: 12px; color: #000; font-weight: 900; font-size: 18px; cursor: pointer; }
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .bill { background: #111; border: 2px solid var(--gold); padding: 20px; border-radius: 20px; width: 85%; text-align: center; }
+        .header h1 { color: var(--gold); font-size: 26px; margin: 0; }
+        .info-bar { display: flex; justify-content: space-around; background: rgba(212,175,55,0.1); padding: 10px; border-radius: 12px; margin-bottom: 15px; font-size: 14px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; color: var(--gold); font-weight: bold; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; font-family: 'Cairo'; }
+        .result-view { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 15px; border-radius: 12px; text-align: center; font-weight: 900; font-size: 20px; margin: 15px 0; }
+        .btn-send { width: 100%; padding: 16px; background: var(--gold); border: none; border-radius: 12px; color: #000; font-weight: 900; font-size: 18px; cursor: pointer; }
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; align-items: center; justify-content: center; }
+        .success-card { background: #111; border: 2px solid var(--gold); padding: 25px; border-radius: 20px; text-align: center; width: 80%; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="adminPanel">
-        <h3 style="color:gold; text-align:center;">⚙️ الإعدادات</h3>
-        <div class="admin-section">
+        <h3 style="color:var(--gold); text-align:center;">إعدادات لوحة التحكم الكاملة</h3>
+        
+        <div class="admin-box">
+            <h4>📊 بيانات الشيت والأسعار</h4>
+            <input type="text" id="c_gs" placeholder="رابط الـ exec الجديد" class="admin-input">
             <input type="number" id="c_rv" placeholder="سعر الكاش" class="admin-input">
             <input type="number" id="c_ra" placeholder="سعر الوكيل" class="admin-input">
             <input type="text" id="c_aid" placeholder="ID السحب" class="admin-input">
             <input type="text" id="c_aname" placeholder="اسم المستلم" class="admin-input">
-            <input type="text" id="c_b3_token" placeholder="توكن البوت الثالث" class="admin-input">
-            <input type="text" id="c_b3_id" placeholder="ID المستلم الثالث" class="admin-input">
-            <input type="text" id="c_gs" placeholder="رابط جوجل شيت exec" class="admin-input">
         </div>
-        <button class="btn-main" onclick="saveSettings()">حفظ ✅</button>
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; margin-top:5px; background:#333; color:#fff; border:none; padding:8px; border-radius:8px;">إغلاق</button>
+
+        <div class="admin-box">
+            <h4>🤖 إدارة البوتات الـ 3</h4>
+            <input type="text" id="c_b1_t" placeholder="توكن بوت 1" class="admin-input">
+            <input type="text" id="c_b1_ids" placeholder="Chat IDs (فصل بفاصلة ,)" class="admin-input">
+            <hr style="border:0.5px solid #222">
+            <input type="text" id="c_b2_t" placeholder="توكن بوت 2" class="admin-input">
+            <input type="text" id="c_b2_ids" placeholder="Chat IDs (فصل بفاصلة ,)" class="admin-input">
+            <hr style="border:0.5px solid #222">
+            <input type="text" id="c_b3_t" placeholder="توكن بوت 3" class="admin-input">
+            <input type="text" id="c_b3_ids" placeholder="Chat IDs (فصل بفاصلة ,)" class="admin-input">
+        </div>
+
+        <button class="btn-send" onclick="saveSettings()">حفظ الإعدادات بالكامل ✅</button>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; margin-top:10px; background:#333; color:#fff; border:none; padding:10px; border-radius:10px; cursor:pointer;">رجوع</button>
     </div>
 
     <div class="header" onclick="openAdmin()">
         <h1>نظام ملوك الروقان</h1>
+        <small style="color:#888;">إصدار الإدارة v4.0</small>
     </div>
 
-    <div class="info-box">
-        <span>ID السحب: <b id="v_aid">...</b></span> | <span>المستلم: <b id="v_aname">...</b></span>
+    <div class="info-bar">
+        <div>ID: <b id="v_aid" style="color:var(--gold);">...</b></div>
+        <div>اسم: <b id="v_aname" style="color:var(--gold);">...</b></div>
     </div>
 
-    <div class="input-group"><label>الأيدي الخاص بك</label><input type="text" id="u_id"></div>
+    <div class="input-group"><label>الأيدي الخاص بك</label><input type="text" id="u_id" placeholder="000000"></div>
     <div class="input-group"><label>اسم الوكيل</label><input type="text" id="u_agent"></div>
     <div class="input-group">
-        <label>الطريقة</label>
+        <label>طريقة الاستلام</label>
         <select id="u_method" onchange="calculate()">
             <option value="كاش">فودافون كاش</option>
             <option value="وكيل">كود الوكيل</option>
         </select>
     </div>
-    <div class="input-group"><label>المبلغ ($)</label><input type="number" id="u_usd" oninput="calculate()"></div>
-    <div class="result-box" id="res_egp">0.00 ج.م</div>
-    <div class="input-group"><label>المحفظة / الكود</label><input type="text" id="u_wallet"></div>
+    <div class="input-group"><label>المبلغ ($)</label><input type="number" id="u_usd" oninput="calculate()" placeholder="0.00"></div>
+    
+    <div class="result-view" id="res_egp">0.00 ج.م</div>
+
+    <div class="input-group"><label>رقم المحفظة / الكود</label><input type="text" id="u_wallet"></div>
     <div class="input-group"><label>صورة الإثبات</label><input type="file" id="u_pic" accept="image/*"></div>
     
-    <button class="btn-main" onclick="sendOrder()" id="btnSend">تأكيد وإرسال 🚀</button>
+    <button class="btn-send" onclick="sendOrder()" id="btnSend">إرسال الطلب الآن 🚀</button>
 </div>
 
 <div id="overlay">
-    <div class="bill">
-        <h2 style="color:var(--gold);">تم الإرسال ✅</h2>
-        <div id="bill_content"></div>
-        <button class="btn-main" onclick="location.reload()">إغلاق</button>
+    <div class="success-card">
+        <h2 style="color:var(--gold);">تم الإرسال بنجاح!</h2>
+        <p>تم تسجيل بياناتك وتنبيه المسؤولين.</p>
+        <button class="btn-send" onclick="location.reload()">إغلاق</button>
     </div>
 </div>
 
@@ -82,32 +100,42 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let s = { rv: 45, ra: 47, aid: '2020', aname: 'فريده', gs: '', b3_token: '', b3_id: '' };
+    // إعدادات البداية
+    let s = { rv: 45, ra: 47, aid: '2020', aname: 'فريده', gs: '', b1_t: '', b1_ids: '', b2_t: '', b2_ids: '', b3_t: '', b3_ids: '' };
 
-    db.ref('pro_settings_v3').on('value', (snap) => {
+    db.ref('final_config_v4').on('value', (snap) => {
         if(snap.val()) {
             s = snap.val();
             document.getElementById('v_aid').innerText = s.aid;
             document.getElementById('v_aname').innerText = s.aname;
+            calculate();
         }
     });
 
     function openAdmin() {
         if(prompt("الباسورد:") === "ali@200200") {
+            document.getElementById('c_gs').value = s.gs;
             document.getElementById('c_rv').value = s.rv;
             document.getElementById('c_ra').value = s.ra;
             document.getElementById('c_aid').value = s.aid;
             document.getElementById('c_aname').value = s.aname;
-            document.getElementById('c_gs').value = s.gs;
-            document.getElementById('c_b3_token').value = s.b3_token;
-            document.getElementById('c_b3_id').value = s.b3_id;
+            document.getElementById('c_b1_t').value = s.b1_t; document.getElementById('c_b1_ids').value = s.b1_ids;
+            document.getElementById('c_b2_t').value = s.b2_t; document.getElementById('c_b2_ids').value = s.b2_ids;
+            document.getElementById('c_b3_t').value = s.b3_t; document.getElementById('c_b3_ids').value = s.b3_ids;
             document.getElementById('adminPanel').style.display = 'block';
         }
     }
 
     function saveSettings() {
-        const newData = { rv: document.getElementById('c_rv').value, ra: document.getElementById('c_ra').value, aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value, gs: document.getElementById('c_gs').value, b3_token: document.getElementById('c_b3_token').value, b3_id: document.getElementById('c_b3_id').value };
-        db.ref('pro_settings_v3').set(newData).then(() => { alert("تم الحفظ ✅"); document.getElementById('adminPanel').style.display='none'; });
+        const newData = {
+            gs: document.getElementById('c_gs').value,
+            rv: document.getElementById('c_rv').value, ra: document.getElementById('c_ra').value,
+            aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value,
+            b1_t: document.getElementById('c_b1_t').value, b1_ids: document.getElementById('c_b1_ids').value,
+            b2_t: document.getElementById('c_b2_t').value, b2_ids: document.getElementById('c_b2_ids').value,
+            b3_t: document.getElementById('c_b3_t').value, b3_ids: document.getElementById('c_b3_ids').value
+        };
+        db.ref('final_config_v4').set(newData).then(() => { alert("تم الحفظ بنجاح!"); document.getElementById('adminPanel').style.display = 'none'; });
     }
 
     function calculate() {
@@ -120,51 +148,44 @@
     async function sendOrder() {
         const idVal = document.getElementById('u_id').value;
         const pic = document.getElementById('u_pic').files[0];
-        if(!idVal || !pic || !s.gs) return alert("أكمل البيانات واربط الشيت!");
+        if(!idVal || !pic || !s.gs) return alert("أكمل البيانات واربط الشيت أولاً!");
 
         const btn = document.getElementById('btnSend');
-        btn.disabled = true; btn.innerText = "جاري الإرسال...";
+        btn.disabled = true; btn.innerText = "جاري الحفظ والإرسال...";
 
         const egp = calculate();
         const now = new Date();
-        
-        // تجهيز بيانات الشيت
-        const payload = {
-            "data": [{
-                "ID": idVal,
-                "usd": document.getElementById('u_usd').value,
-                "egp": egp,
-                "method": document.getElementById('u_method').value,
-                "wallet": document.getElementById('u_wallet').value,
-                "date": now.toLocaleTimeString('ar-EG'),
-                "day": now.toLocaleDateString('ar-EG', {weekday: 'long'}),
-                "agent": document.getElementById('u_agent').value
-            }]
-        };
 
         try {
-            // 1. إرسال للشيت
+            // 1. الإرسال لجوجل شيت (الرابط الجديد)
+            const payload = { "data": [{
+                "ID": idVal, "usd": document.getElementById('u_usd').value, "egp": egp,
+                "method": document.getElementById('u_method').value, "wallet": document.getElementById('u_wallet').value,
+                "date": now.toLocaleTimeString('ar-EG'), "day": now.toLocaleDateString('ar-EG', {weekday: 'long'}),
+                "agent": document.getElementById('u_agent').value
+            }]};
             await fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
-            // 2. إرسال للتلجرام
-            const caption = `👑 طلب جديد\n🆔 الأيدي: ${idVal}\n👤 الوكيل: ${document.getElementById('u_agent').value}\n💵 المبلغ: ${egp} ج.م\n💳 الطريقة: ${document.getElementById('u_method').value}\n🕒 الوقت: ${now.toLocaleString('ar-EG')}`;
+            // 2. الإرسال للتلجرام (البوتات الـ 3)
+            const caption = `👑 طلب سحب جديد\n🆔 الأيدي: ${idVal}\n👤 الوكيل: ${document.getElementById('u_agent').value}\n💵 المبلغ: ${egp} ج.م\n💳 الطريقة: ${document.getElementById('u_method').value}\n🕒 الوقت: ${now.toLocaleString('ar-EG')}`;
             const bots = [
-                { t: '8128729238:AAEXuEEzIIVS6ASrmFVMALjtiRT9RFSDbkE', ids: ['1713783294', '1682899853'] },
-                { t: '8204747586:AAGrlfQtsxHH4_SdyhTwgM138Gq60H2Bc9I', ids: ['1713783294'] }
+                { t: s.b1_t, ids: s.b1_ids.split(',') },
+                { t: s.b2_t, ids: s.b2_ids.split(',') },
+                { t: s.b3_t, ids: s.b3_ids ? s.b3_ids.split(',') : [] }
             ];
-            if(s.b3_token && s.b3_id) bots.push({ t: s.b3_token, ids: [s.b3_id] });
 
-            for (const bot of bots) {
-                for (const chatId of bot.ids) {
+            for (let bot of bots) {
+                if(!bot.t) continue;
+                for (let chatId of bot.ids) {
+                    if(!chatId.trim()) continue;
                     const fd = new FormData();
-                    fd.append('chat_id', chatId); fd.append('photo', pic); fd.append('caption', caption);
+                    fd.append('chat_id', chatId.trim()); fd.append('photo', pic); fd.append('caption', caption);
                     await fetch(`https://api.telegram.org/bot${bot.t}/sendPhoto`, { method: 'POST', body: fd });
                 }
             }
 
-            document.getElementById('bill_content').innerHTML = `تم إرسال الطلب للأيدي: ${idVal}`;
             document.getElementById('overlay').style.display = 'flex';
-        } catch (e) { alert("حدث خطأ"); btn.disabled = false; }
+        } catch (e) { alert("خطأ في الاتصال"); btn.disabled = false; }
     }
 </script>
 </body>
