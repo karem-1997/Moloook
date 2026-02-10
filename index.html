@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v13.0 - النسخة المستقرة</title>
+    <title>ملوك الروقان v14.0</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -45,19 +45,18 @@
         <div class="admin-box">
             <h4>⚙️ الإعدادات العامة</h4>
             <label>سعر الدولار:</label><input type="number" id="c_rv">
-            <label>بوت 1:</label><input type="text" id="c_b1">
-            <label>بوت 2:</label><input type="text" id="c_b2">
-            <label>بوت 3:</label><input type="text" id="c_b3">
-            <label>بوت 4:</label><input type="text" id="c_b4">
-            <label>IDs المستلمين:</label><input type="text" id="c_b_ids" placeholder="ID1,ID2">
+            <label>بوتات التلجرام (4 توكنات):</label>
+            <input type="text" id="c_b1" placeholder="Token 1"><input type="text" id="c_b2" placeholder="Token 2">
+            <input type="text" id="c_b3" placeholder="Token 3"><input type="text" id="c_b4" placeholder="Token 4">
+            <label>IDs المستلمين (فاصلة بينهم):</label><input type="text" id="c_b_ids">
             <label>رابط الشيت:</label><input type="text" id="c_gs">
             <label>ID السحب:</label><input type="text" id="c_aid">
             <label>اسم المستلم:</label><input type="text" id="c_aname">
-            <button class="btn-send" onclick="saveSettings()" style="margin-top:10px; font-size:16px;">حفظ الإعدادات ✅</button>
+            <button class="btn-send" onclick="saveSettings()" style="margin-top:10px; font-size:16px;">حفظ الإعدادات في السحابة ✅</button>
         </div>
         <div class="admin-box">
             <h4>📩 الطلبات الجديدة</h4>
-            <div id="ordersList">جارِ التحميل...</div>
+            <div id="ordersList">بانتظار البيانات...</div>
         </div>
         <div class="admin-box">
             <h4 style="color:#25d366;">✅ الأرشيف (تم الدفع)</h4>
@@ -72,7 +71,7 @@
         <div>👤 مستلم: <b id="v_aname">---</b></div>
     </div>
 
-    <div class="form-group"><label>الأيدي الخاص بك (ID) <span style="color:red">*</span></label><input type="text" id="u_id"></div>
+    <div class="form-group"><label>الأيدي الخاص بك (ID)</label><input type="text" id="u_id"></div>
     <div class="form-group"><label>اسم الوكيل (اختياري)</label><input type="text" id="u_agent"></div>
     <div class="form-group">
         <label>طريقة الاستلام</label>
@@ -82,55 +81,70 @@
             <option value="اتصالات كاش">اتصالات كاش</option>
         </select>
     </div>
-    <div class="form-group"><label>المبلغ المطلوب ($) <span style="color:red">*</span></label><input type="number" id="u_usd" oninput="calculate()"></div>
+    <div class="form-group"><label>المبلغ ($)</label><input type="number" id="u_usd" oninput="calculate()"></div>
     <div class="result-box" id="res_egp">0.00 ج.م</div>
-    <div class="form-group"><label>رقم المحفظة <span style="color:red">*</span></label><input type="text" id="u_wallet"></div>
-    <div class="form-group"><label>إثبات السحب <span style="color:red">*</span></label><input type="file" id="u_pic" accept="image/*"></div>
+    <div class="form-group"><label>رقم المحفظة</label><input type="text" id="u_wallet"></div>
+    <div class="form-group"><label>إثبات السحب</label><input type="file" id="u_pic" accept="image/*"></div>
     
-    <button class="btn-send" onclick="sendOrder()" id="btnSend">تأكيد وإرسال الطلب 🚀</button>
+    <button class="btn-send" onclick="sendOrder()" id="btnSend">تأكيد الإرسال 🚀</button>
 </div>
 
-<div id="overlay"><div class="bill-vip"><h2>ملوك الروقان</h2><p>إيصال سحب تارجت معتمد</p><div id="bill_details"></div><div class="bill-total" id="bill_total">0.00 EGP</div><button class="btn-send" style="margin-top:20px;" onclick="location.reload()">إغلاق</button></div></div>
+<div id="overlay"><div class="bill-vip"><h2>ملوك الروقان</h2><p>إيصال سحب تارجت معتمد</p><div id="bill_details"></div><div class="bill-total" id="bill_total">0.00 EGP</div><button class="btn-send" style="margin-top:20px;" onclick="location.reload()">تم ✅</button></div></div>
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyD-XYPHc4sEHYqDYrz72KrqxPNPihc0CFA", authDomain: "molook-51d9e.firebaseapp.com", projectId: "molook-51d9e", databaseURL: "https://molook-51d9e-default-rtdb.firebaseio.com/", storageBucket: "molook-51d9e.firebasestorage.app", messagingSenderId: "646971816528", appId: "1:646971816528:web:44c5c4f9bd370963dc6f55" };
-    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const PATH_CONFIG = "CONFIG_DATA";
-    const PATH_ORDERS = "ORDERS_DATA";
+    
+    // مسارات ثابتة لا تتغير أبداً
+    const PATH_CONF = "MOLOOK_SETTINGS"; 
+    const PATH_ORDR = "MOLOOK_ORDERS";
 
     let s = { rv: 45, aid: '---', aname: '---', gs: '', b1: '', b2: '', b3: '', b4: '', b_ids: '' };
 
-    db.ref(PATH_CONFIG).on('value', (snap) => {
-        if(snap.val()) {
-            s = snap.val();
-            document.getElementById('v_aid').innerText = s.aid;
-            document.getElementById('v_aname').innerText = s.aname;
-            document.getElementById('c_rv').value = s.rv;
-            document.getElementById('c_b1').value = s.b1; document.getElementById('c_b2').value = s.b2;
-            document.getElementById('c_b3').value = s.b3; document.getElementById('c_b4').value = s.b4;
-            document.getElementById('c_b_ids').value = s.b_ids; document.getElementById('c_gs').value = s.gs;
-            document.getElementById('c_aid').value = s.aid; document.getElementById('c_aname').value = s.aname;
+    // جلب البيانات فور تحميل الصفحة
+    db.ref(PATH_CONF).on('value', (snap) => {
+        const val = snap.val();
+        if(val) {
+            s = val;
+            document.getElementById('v_aid').innerText = s.aid || '---';
+            document.getElementById('v_aname').innerText = s.aname || '---';
+            document.getElementById('c_rv').value = s.rv || '';
+            document.getElementById('c_b1').value = s.b1 || ''; document.getElementById('c_b2').value = s.b2 || '';
+            document.getElementById('c_b3').value = s.b3 || ''; document.getElementById('c_b4').value = s.b4 || '';
+            document.getElementById('c_b_ids').value = s.b_ids || ''; document.getElementById('c_gs').value = s.gs || '';
+            document.getElementById('c_aid').value = s.aid || ''; document.getElementById('c_aname').value = s.aname || '';
         }
     });
 
-    db.ref(PATH_ORDERS).on('value', (snap) => {
+    // مراقبة الطلبات
+    db.ref(PATH_ORDR).on('value', (snap) => {
         const list = document.getElementById('ordersList');
         const paidList = document.getElementById('paidOrdersList');
         list.innerHTML = ""; paidList.innerHTML = "";
         if(snap.val()) {
             Object.keys(snap.val()).reverse().forEach(k => {
                 const o = snap.val()[k];
-                const itemHtml = `
-                    <div class="order-card ${o.status === 'paid' ? 'paid' : ''}">
-                        🆔 ID: ${o.id} | 💰 ${o.egp} ج.م<br>📱 ${o.wallet} (${o.method})<br>
-                        ${o.status !== 'paid' ? `<button class="btn-wa" onclick="processOrder('${k}', '${o.wallet}', '${o.egp}')">نسخ الرقم وفتح واتساب ✅</button>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
-                        <button class="btn-del" onclick="deleteOrder('${k}')">حذف 🗑️</button>
-                    </div>`;
-                if(o.status === 'paid') paidList.innerHTML += itemHtml; else list.innerHTML += itemHtml;
+                const html = `<div class="order-card ${o.status === 'paid' ? 'paid' : ''}">
+                    🆔 ID: ${o.id} | 💰 ${o.egp} ج.م<br>📱 ${o.wallet} (${o.method})<br>
+                    ${o.status !== 'paid' ? `<button class="btn-wa" onclick="processOrder('${k}', '${o.wallet}', '${o.egp}')">نسخ الرقم وفتح واتساب ✅</button>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
+                    <button class="btn-del" onclick="deleteOrder('${k}')">حذف نهائي</button>
+                </div>`;
+                if(o.status === 'paid') paidList.innerHTML += html; else list.innerHTML += html;
             });
         }
     });
+
+    function saveSettings() {
+        const d = { 
+            rv: document.getElementById('c_rv').value, 
+            b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value, 
+            b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value, 
+            b_ids: document.getElementById('c_b_ids').value, gs: document.getElementById('c_gs').value, 
+            aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value 
+        };
+        db.ref(PATH_CONF).set(d).then(() => alert("تم حفظ الإعدادات في السحابة بنجاح ✅")).catch(e => alert("خطأ في الحفظ!"));
+    }
 
     function calculate() {
         const t = (document.getElementById('u_usd').value * (s.rv || 0)).toFixed(2);
@@ -139,51 +153,45 @@
 
     function processOrder(key, wallet, egp) {
         navigator.clipboard.writeText(wallet);
-        db.ref(PATH_ORDERS).child(key).update({ status: 'paid' });
+        db.ref(PATH_ORDR).child(key).update({ status: 'paid' });
         let p = wallet.replace(/\D/g, '');
         if (p.startsWith('01')) p = '2' + p; else if (p.startsWith('09')) p = '963' + p;
-        window.open(`https://wa.me/${p}?text=${encodeURIComponent('تم تحويل مبلغ ' + egp + ' ج.م بنجاح ✅')}`, '_blank');
+        window.open(`https://wa.me/${p}?text=${encodeURIComponent('من ملوك الروقان.. تم تحويل مبلغ ' + egp + ' ج.م بنجاح ✅')}`, '_blank');
     }
 
-    function deleteOrder(k) { if(confirm("حذف؟")) db.ref(PATH_ORDERS).child(k).remove(); }
-    function openAdmin() { if(prompt("كلمة السر:") === "ali@200200") document.getElementById('adminPanel').style.display='block'; }
-
-    function saveSettings() {
-        const d = { rv: document.getElementById('c_rv').value, b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value, b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value, b_ids: document.getElementById('c_b_ids').value, gs: document.getElementById('c_gs').value, aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value };
-        db.ref(PATH_CONFIG).set(d).then(() => alert("تم الحفظ ✅"));
-    }
+    function deleteOrder(k) { if(confirm("حذف الطلب نهائياً؟")) db.ref(PATH_ORDR).child(k).remove(); }
+    function openAdmin() { if(prompt("كلمة سر الإدارة:") === "ali@200200") document.getElementById('adminPanel').style.display='block'; }
 
     async function sendOrder() {
         const idV = document.getElementById('u_id').value, usdV = document.getElementById('u_usd').value, walV = document.getElementById('u_wallet').value, pic = document.getElementById('u_pic').files[0];
-        if(!idV || !usdV || !walV || !pic) return alert("برجاء ملء البيانات الأساسية!");
+        if(!idV || !usdV || !walV || !pic) return alert("البيانات ناقصة!");
 
         const btn = document.getElementById('btnSend'); btn.disabled = true; btn.innerText = "جاري الإرسال...";
         const egp = calculate(), agV = document.getElementById('u_agent').value || "غير محدد", methV = document.getElementById('u_method').value;
-        const now = new Date(), timeS = now.toLocaleTimeString('ar-EG'), dayS = now.toLocaleDateString('ar-EG', {weekday: 'long'});
+        const now = new Date(), timeS = now.toLocaleTimeString('ar-EG');
 
         try {
-            // 1. Firebase
-            await db.ref(PATH_ORDERS).push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending', agent: agV });
+            // 1. التخزين في Firebase أولاً لضمان عدم ضياع الطلب
+            await db.ref(PATH_ORDR).push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending', agent: agV });
 
-            // 2. Telegram (4 Bots)
-            const cap = `👑 ملوك الروقان - طلب جديد\n🆔 ID: ${idV}\n👤 وكيل: ${agV}\n💵 مبلغ: ${usdV}$ (${egp} ج.م)\n💳 طريقة: ${methV}\n📱 رقم: ${walV}\n🕒 وقت: ${timeS}`;
+            // 2. إرسال للتلجرام
+            const cap = `👑 طلب جديد\n🆔 ID: ${idV}\n👤 وكيل: ${agV}\n💵 مبلغ: ${usdV}$ (${egp} ج.م)\n💳 طريقة: ${methV}\n📱 رقم: ${walV}`;
             const bots = [s.b1, s.b2, s.b3, s.b4].filter(b => b);
-            const ids = s.b_ids.split(',');
             bots.forEach(bot => {
-                ids.forEach(cid => {
+                s.b_ids.split(',').forEach(cid => {
                     const fd = new FormData(); fd.append('chat_id', cid.trim()); fd.append('photo', pic); fd.append('caption', cap);
-                    fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd }).catch(() => {});
+                    fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd });
                 });
             });
 
-            // 3. Google Sheets (اختياري لا يعطل الكود)
-            if(s.gs) fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify({"data": [{"ID": idV, "usd": usdV, "egp": egp, "method": methV, "wallet": walV, "agent": agV}]}) }).catch(() => {});
+            // 3. إرسال للشيت (اختياري)
+            if(s.gs) fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify({"data": [{"ID": idV, "usd": usdV, "egp": egp, "method": methV, "wallet": walV, "agent": agV}]}) });
 
-            // 4. Receipt
-            document.getElementById('bill_details').innerHTML = `<div class="bill-row"><span>الأيدي:</span><span>${idV}</span></div><div class="bill-row"><span>المبلغ:</span><span>${egp} ج.م</span></div><div class="bill-row"><span>الوكيل:</span><span>${agV}</span></div><div class="bill-row"><span>المحفظة:</span><span>${walV}</span></div>`;
+            // 4. عرض الفاتورة
+            document.getElementById('bill_details').innerHTML = `<div class="bill-row"><span>الأيدي:</span><span>${idV}</span></div><div class="bill-row"><span>المبلغ:</span><span>${egp} ج.م</span></div><div class="bill-row"><span>المحفظة:</span><span>${walV}</span></div>`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
             document.getElementById('overlay').style.display = 'flex';
-        } catch (e) { alert("حدث خطأ في النظام!"); btn.disabled = false; }
+        } catch (e) { alert("خطأ!"); btn.disabled = false; }
     }
 </script>
 </body>
