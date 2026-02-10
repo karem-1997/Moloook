@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v15.0 - النسخة النهائية</title>
+    <title>ملوك الروقان v16.0 - الماستر النهائي</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -31,16 +31,14 @@
         label { display: block; margin-bottom: 6px; color: var(--gold); font-weight: bold; }
         input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; outline: none; }
         
-        .result-box { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 18px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 24px; margin: 20px 0; box-shadow: 0 5px 15px rgba(212,175,55,0.4); }
+        .result-box { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 18px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 24px; margin: 20px 0; }
         .btn-send { width: 100%; padding: 18px; background: var(--gold); border: none; border-radius: 15px; color: #000; font-weight: 900; font-size: 20px; cursor: pointer; }
 
-        /* الفاتورة الاحترافية */
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 10000; align-items: center; justify-content: center; }
         .bill-vip { background: #fff; color: #000; padding: 25px; border-radius: 20px; width: 85%; max-width: 380px; border: 4px solid var(--gold); position: relative; }
-        .bill-vip h2 { text-align: center; margin: 0; color: #000; font-weight: 900; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .bill-vip h2 { text-align: center; margin: 0; color: #000; font-weight: 900; }
         .bill-vip p { text-align: center; font-size: 11px; color: #666; margin: 5px 0 15px 0; }
         .bill-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 7px 0; font-size: 13px; }
-        .bill-row b { color: #000; }
         .bill-total-box { background: #000; color: var(--gold); text-align: center; padding: 15px; border-radius: 12px; margin-top: 15px; font-size: 20px; font-weight: 900; }
     </style>
 </head>
@@ -52,7 +50,7 @@
         <div class="admin-box">
             <h4>⚙️ الإعدادات</h4>
             <label>سعر الدولار:</label><input type="number" id="c_rv">
-            <label>توكنات البوتات (1-4):</label>
+            <label>بوتات التلجرام (1-4):</label>
             <input type="text" id="c_b1" placeholder="Bot 1"><input type="text" id="c_b2" placeholder="Bot 2">
             <input type="text" id="c_b3" placeholder="Bot 3"><input type="text" id="c_b4" placeholder="Bot 4">
             <label>Chat IDs:</label><input type="text" id="c_b_ids">
@@ -61,15 +59,9 @@
             <label>اسم المستلم:</label><input type="text" id="c_aname">
             <button class="btn-send" onclick="saveSettings()" style="margin-top:10px; font-size:16px;">حفظ الإعدادات ✅</button>
         </div>
-        <div class="admin-box">
-            <h4>📩 طلبات جديدة</h4>
-            <div id="ordersList">جارِ المزامنة...</div>
-        </div>
-        <div class="admin-box">
-            <h4 style="color:#25d366;">✅ تم الدفع</h4>
-            <div id="paidOrdersList"></div>
-        </div>
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; background:none; color:#777; border:none; padding:15px; cursor:pointer;">إغلاق</button>
+        <div class="admin-box"><h4>📩 طلبات جديدة</h4><div id="ordersList"></div></div>
+        <div class="admin-box"><h4>✅ الأرشيف</h4><div id="paidOrdersList"></div></div>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; color:#777; border:none; padding:15px; background:none; cursor:pointer;">إغلاق</button>
     </div>
 
     <div class="header" onclick="openAdmin()"><h1>ملوك الروقان</h1></div>
@@ -111,8 +103,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    const PATH_CONF = "MOLOOK_V15_SETTINGS"; 
-    const PATH_ORDR = "MOLOOK_V15_ORDERS";
+    const PATH_CONF = "MOLOOK_V16_SETTINGS"; 
+    const PATH_ORDR = "MOLOOK_V16_ORDERS";
 
     let s = { rv: 45, aid: '---', aname: '---', gs: '', b1: '', b2: '', b3: '', b4: '', b_ids: '' };
 
@@ -130,8 +122,7 @@
     });
 
     db.ref(PATH_ORDR).on('value', (snap) => {
-        const list = document.getElementById('ordersList');
-        const paidList = document.getElementById('paidOrdersList');
+        const list = document.getElementById('ordersList'), paidList = document.getElementById('paidOrdersList');
         list.innerHTML = ""; paidList.innerHTML = "";
         if(snap.val()) {
             Object.keys(snap.val()).reverse().forEach(k => {
@@ -142,8 +133,8 @@
                         <div class="btn-group">
                             <button class="btn-copy" onclick="copyNum('${o.wallet}')">نسخ 📋</button>
                             <button class="btn-wa" onclick="goWa('${k}', '${o.wallet}', '${o.egp}')">واتساب ✅</button>
-                        </div>` : `<b style="color:#25d366">تم الدفع والأرشفة ✅</b>`}
-                    <button class="btn-del" onclick="deleteOrder('${k}')">حذف نهائي 🗑️</button>
+                        </div>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
+                    <button class="btn-del" onclick="deleteOrder('${k}')">حذف</button>
                 </div>`;
                 if(o.status === 'paid') paidList.innerHTML += html; else list.innerHTML += html;
             });
@@ -154,56 +145,47 @@
         const t = (document.getElementById('u_usd').value * (s.rv || 0)).toFixed(2);
         document.getElementById('res_egp').innerText = `${t} ج.م`; return t;
     }
-
-    function copyNum(num) { navigator.clipboard.writeText(num); alert("تم نسخ الرقم: " + num); }
-
+    function copyNum(num) { navigator.clipboard.writeText(num); alert("تم نسخ: " + num); }
     function goWa(key, wallet, egp) {
         db.ref(PATH_ORDR).child(key).update({ status: 'paid' });
         let p = wallet.replace(/\D/g, '');
         if (p.startsWith('01')) p = '2' + p; else if (p.startsWith('09')) p = '963' + p;
-        window.open(`https://wa.me/${p}?text=${encodeURIComponent('تم تحويل مبلغ ' + egp + ' ج.م بنجاح ✅')}`, '_blank');
+        window.open(`https://wa.me/${p}?text=${encodeURIComponent('تم تحويل ' + egp + ' ج.م بنجاح ✅')}`, '_blank');
     }
-
     function deleteOrder(k) { if(confirm("حذف؟")) db.ref(PATH_ORDR).child(k).remove(); }
     function openAdmin() { if(prompt("الباسورد:") === "ali@200200") document.getElementById('adminPanel').style.display='block'; }
-
     function saveSettings() {
         const d = { rv: document.getElementById('c_rv').value, b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value, b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value, b_ids: document.getElementById('c_b_ids').value, gs: document.getElementById('c_gs').value, aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value };
-        db.ref(PATH_CONF).set(d).then(() => alert("تم الحفظ في السحابة ✅"));
+        db.ref(PATH_CONF).set(d).then(() => alert("تم الحفظ ✅"));
     }
 
     async function sendOrder() {
         const idV = document.getElementById('u_id').value, usdV = document.getElementById('u_usd').value, walV = document.getElementById('u_wallet').value, pic = document.getElementById('u_pic').files[0];
-        if(!idV || !usdV || !walV || !pic) return alert("الرجاء إكمال البيانات!");
-
+        if(!idV || !usdV || !walV || !pic) return alert("أكمل البيانات!");
         const btn = document.getElementById('btnSend'); btn.disabled = true; btn.innerText = "جاري الإرسال...";
         const egp = calculate(), agV = document.getElementById('u_agent').value || "تلقائي", methV = document.getElementById('u_method').value;
-        const now = new Date(), dateS = now.toLocaleDateString('ar-EG'), timeS = now.toLocaleTimeString('ar-EG');
+        const now = new Date(), dateS = now.toLocaleDateString('ar-EG'), timeS = now.toLocaleTimeString('ar-EG'), dayS = now.toLocaleDateString('ar-EG', {weekday: 'long'});
 
         try {
-            await db.ref(PATH_ORDR).push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending', agent: agV });
+            await db.ref(PATH_ORDR).push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending', agent: agV, date: dateS, day: dayS });
             
+            // تلجرام - إضافة التاريخ واليوم
+            const cap = `👑 ملوك الروقان\n🆔 ID: ${idV}\n👤 وكيل: ${agV}\n💵 مبلغ: ${usdV}$ (${egp} ج.م)\n💳 طريقة: ${methV}\n📱 رقم: ${walV}\n📅 اليوم: ${dayS}\n📆 التاريخ: ${dateS}\n⏰ الوقت: ${timeS}`;
             const bots = [s.b1, s.b2, s.b3, s.b4].filter(b => b);
             bots.forEach(bot => {
                 s.b_ids.split(',').forEach(cid => {
-                    const fd = new FormData(); fd.append('chat_id', cid.trim()); fd.append('photo', pic); fd.append('caption', `👑 ملوك الروقان\n🆔 ID: ${idV}\n👤 وكيل: ${agV}\n💵 مبلغ: ${usdV}$ (${egp} ج.م)\n💳 طريقة: ${methV}\n📱 رقم: ${walV}\n⏰ ${timeS}`);
+                    const fd = new FormData(); fd.append('chat_id', cid.trim()); fd.append('photo', pic); fd.append('caption', cap);
                     fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd });
                 });
             });
 
-            if(s.gs) fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify({"data": [{"ID": idV, "usd": usdV, "egp": egp, "method": methV, "wallet": walV, "agent": agV}]}) });
+            // إرسال للشيت - إضافة التاريخ واليوم
+            if(s.gs) fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify({"data": [{"ID": idV, "usd": usdV, "egp": egp, "method": methV, "wallet": walV, "agent": agV, "date": dateS, "day": dayS, "time": timeS}]}) });
 
-            document.getElementById('bill_details').innerHTML = `
-                <div class="bill-row"><span>أيدي المستخدم:</span> <b>${idV}</b></div>
-                <div class="bill-row"><span>اسم الوكيل:</span> <b>${agV}</b></div>
-                <div class="bill-row"><span>المبلغ ($):</span> <b>${usdV} $</b></div>
-                <div class="bill-row"><span>وسيلة الاستلام:</span> <b>${methV}</b></div>
-                <div class="bill-row"><span>رقم المحفظة:</span> <b>${walV}</b></div>
-                <div class="bill-row"><span>التاريخ:</span> <b>${dateS}</b></div>
-                <div class="bill-row"><span>الوقت:</span> <b>${timeS}</b></div>`;
+            document.getElementById('bill_details').innerHTML = `<div class="bill-row"><span>الأيدي:</span> <b>${idV}</b></div><div class="bill-row"><span>المبلغ ($):</span> <b>${usdV} $</b></div><div class="bill-row"><span>المحفظة:</span> <b>${walV}</b></div><div class="bill-row"><span>اليوم:</span> <b>${dayS}</b></div><div class="bill-row"><span>التاريخ:</span> <b>${dateS}</b></div>`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
             document.getElementById('overlay').style.display = 'flex';
-        } catch (e) { alert("فشل الإرسال!"); btn.disabled = false; }
+        } catch (e) { alert("خطأ!"); btn.disabled = false; }
     }
 </script>
 </body>
