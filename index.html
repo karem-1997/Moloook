@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v35.0 - نظام الحماية</title>
+    <title>ملوك الروقان v36.0</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -15,7 +15,7 @@
         .admin-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 15px; margin-bottom: 10px; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 8px; }
-        .btn-pay { background: #e60000; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 900; grid-column: span 2; margin-bottom: 5px; font-size: 16px; }
+        .btn-pay { background: #e60000; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 900; grid-column: span 2; margin-bottom: 5px; }
         .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-wa { background: #25d366; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 900; }
         input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; margin-bottom: 15px; outline: none; }
@@ -32,18 +32,19 @@
     <div id="adminPanel">
         <h2 style="color:var(--gold); text-align:center;">إدارة ملوك الروقان</h2>
         <div class="admin-box">
-            <h4>⚙️ الإعدادات العامة</h4>
+            <h4>⚙️ الإعدادات</h4>
             <label>سعر الدولار:</label><input type="number" id="c_rv">
             <label>رابط الشيت:</label><input type="text" id="c_gs">
-            <label>🆔 أيام منع التكرار:</label><input type="number" id="c_limit" placeholder="مثلاً 2 لمنع الطلب المتكرر ليومين">
+            <label>🚫 أيام منع التكرار:</label><input type="number" id="c_limit">
             <label>ID السحب:</label><input type="text" id="c_aid"><label>المستلم:</label><input type="text" id="c_aname">
             <h4>🤖 البوتات والـ IDs</h4>
             <input type="text" id="c_b1" placeholder="Bot 1"><input type="text" id="c_b2" placeholder="Bot 2">
             <input type="text" id="c_b3" placeholder="Bot 3"><input type="text" id="c_b4" placeholder="Bot 4">
             <input type="text" id="c_b_ids" placeholder="Chat IDs">
-            <button class="btn-send" onclick="saveSettings()" style="font-size:16px;">حفظ الإعدادات ✅</button>
+            <button class="btn-send" onclick="saveSettings()" style="font-size:16px;">حفظ ✅</button>
         </div>
-        <div class="admin-box"><h4>📩 الطلبات الحالية</h4><div id="ordersList"></div></div>
+        <div class="admin-box"><h4>📩 الطلبات</h4><div id="ordersList"></div></div>
+        <div class="admin-box"><h4>✅ الأرشيف</h4><div id="paidList"></div></div>
         <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; color:#777; padding:15px; background:none; border:none; cursor:pointer;">إغلاق</button>
     </div>
 
@@ -68,12 +69,13 @@
 <div id="overlay"><div class="bill-vip"><h2 style="text-align:center;">ملوك الروقان</h2><div id="bill_details" style="margin:20px 0;"></div><div style="background:#000; color:#d4af37; text-align:center; padding:15px; border-radius:12px; font-size:24px; font-weight:900;" id="bill_total">0.00 EGP</div><button class="btn-send" style="margin-top:20px; background:#000; color:#fff;" onclick="location.reload()">تم ✅</button></div></div>
 
 <script>
+    // العودة لمسار V32 لضمان استرجاع بياناتك وإعداداتك
     const firebaseConfig = { apiKey: "AIzaSyD-XYPHc4sEHYqDYrz72KrqxPNPihc0CFA", authDomain: "molook-51d9e.firebaseapp.com", projectId: "molook-51d9e", databaseURL: "https://molook-51d9e-default-rtdb.firebaseio.com/", storageBucket: "molook-51d9e.firebasestorage.app", messagingSenderId: "646971816528", appId: "1:646971816528:web:44c5c4f9bd370963dc6f55" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     let s = {};
-    db.ref("MOLOOK_V35_SETTINGS").on('value', snap => {
+    db.ref("MOLOOK_V32_SETTINGS").on('value', snap => {
         s = snap.val() || {};
         document.getElementById('v_aid').innerText = s.aid || '---';
         document.getElementById('v_aname').innerText = s.aname || '---';
@@ -86,39 +88,42 @@
         document.getElementById('c_aid').value = s.aid || ''; document.getElementById('c_aname').value = s.aname || '';
     });
 
-    db.ref("MOLOOK_V35_ORDERS").on('value', snap => {
-        const list = document.getElementById('ordersList');
-        list.innerHTML = "";
+    db.ref("MOLOOK_V32_ORDERS").on('value', snap => {
+        const list = document.getElementById('ordersList'), plist = document.getElementById('paidList');
+        list.innerHTML = ""; plist.innerHTML = "";
         if(snap.val()) {
             Object.keys(snap.val()).reverse().forEach(k => {
                 const o = snap.val()[k];
-                list.innerHTML += `<div class="order-card">
+                const h = `<div class="order-card">
                     <b>🆔 الأيدي:</b> ${o.id}<br><b>💰 المبلغ:</b> ${o.egp} ج.م<br><b>📱 الرقم:</b> ${o.wallet}<br>
+                    ${o.status !== 'paid' ? `
                     <div class="btn-group">
                         <button class="btn-pay" onclick="vodaPay('${o.wallet}', '${Math.round(o.egp)}')">دفع فودافون 💳</button>
+                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('نسخ')">نسخ</button>
                         <button class="btn-wa" onclick="finish('${k}','${o.wallet}','${o.id}')">واتساب ✅</button>
-                    </div>
+                    </div>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
+                    <button style="width:100%; margin-top:5px; font-size:10px; opacity:0.3;" onclick="db.ref('MOLOOK_V32_ORDERS').child('${k}').remove()">حذف</button>
                 </div>`;
+                if(o.status === 'paid') plist.innerHTML += h; else list.innerHTML += h;
             });
         }
     });
 
     function vodaPay(num, amount) { window.location.href = `tel:*9*7*${num}*${amount}%23`; }
     function calculate() { const r = (document.getElementById('u_usd').value * (s.rv || 0)).toFixed(2); document.getElementById('res_egp').innerText = `${r} ج.م`; return r; }
-    function saveSettings() { db.ref("MOLOOK_V35_SETTINGS").set({ rv: document.getElementById('c_rv').value, gs: document.getElementById('c_gs').value, limit: document.getElementById('c_limit').value, b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value, b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value, b_ids: document.getElementById('c_b_ids').value, aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value }).then(() => alert("تم الحفظ ✅")); }
+    function saveSettings() { db.ref("MOLOOK_V32_SETTINGS").set({ rv: document.getElementById('c_rv').value, gs: document.getElementById('c_gs').value, limit: document.getElementById('c_limit').value, b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value, b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value, b_ids: document.getElementById('c_b_ids').value, aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value }).then(() => alert("تم الحفظ ✅")); }
     function openAdmin() { if(prompt("الباسورد:") === "1987") document.getElementById('adminPanel').style.display='block'; }
 
     async function sendOrder() {
         const idV = document.getElementById('u_id').value, usdV = document.getElementById('u_usd').value, walV = document.getElementById('u_wallet').value, pic = document.getElementById('u_pic').files[0];
         if(!idV || !usdV || !walV || !pic) return alert("أكمل البيانات!");
-        
-        // فحص التكرار
+
+        // منع التكرار
         if(s.limit > 0) {
-            const snap = await db.ref("MOLOOK_V35_HISTORY").child(idV).get();
-            if(snap.exists()) {
-                const lastTime = snap.val().time;
-                const diffDays = (Date.now() - lastTime) / (1000 * 60 * 60 * 24);
-                if(diffDays < s.limit) return alert(`عفواً! تم إرسال طلب لهذا الأيدي مؤخراً. حاول بعد ${Math.ceil(s.limit - diffDays)} أيام.`);
+            const hist = await db.ref("MOLOOK_HISTORY").child(idV).get();
+            if(hist.exists()) {
+                const diff = (Date.now() - hist.val()) / (1000*60*60*24);
+                if(diff < s.limit) return alert(`عفواً! هذا الأيدي أرسل طلباً مؤخراً. حاول بعد ${Math.ceil(s.limit-diff)} يوم.`);
             }
         }
 
@@ -127,14 +132,12 @@
         const now = new Date(), dS = now.toLocaleDateString('ar-EG'), dy = now.toLocaleDateString('ar-EG', {weekday: 'long'});
 
         try {
-            // تلجرام وشيت (نفس الأكواد السابقة بالضبط)
             const cap = `👑 طلب جديد\n🆔 ID: ${idV}\n💵 مبلغ: ${usdV}$\n💰 مصري: ${egp}\n📱 رقم: ${walV}\n👤 وكيل: ${agV}\n📅 ${dy} | ${dS}`;
             [s.b1, s.b2, s.b3, s.b4].filter(b => b).forEach(bot => { s.b_ids.split(',').forEach(cid => { const fd = new FormData(); fd.append('chat_id', cid.trim()); fd.append('photo', pic); fd.append('caption', cap); fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd }); }); });
             if(s.gs) fetch(`${s.gs}?id=${encodeURIComponent(idV)}&usd=${encodeURIComponent(usdV)}&egp=${encodeURIComponent(egp)}&method=${encodeURIComponent(methV)}&wallet=${encodeURIComponent(walV)}&date=${encodeURIComponent(dS)}&day=${encodeURIComponent(dy)}&agent=${encodeURIComponent(agV)}`, { method: 'POST', mode: 'no-cors' });
 
-            // تسجيل الطلب في الهستوري والطلبات الحالية
-            await db.ref("MOLOOK_V35_ORDERS").push({ id: idV, egp: egp, wallet: walV, method: methV });
-            await db.ref("MOLOOK_V35_HISTORY").child(idV).set({ time: Date.now() });
+            await db.ref("MOLOOK_V32_ORDERS").push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending' });
+            await db.ref("MOLOOK_HISTORY").child(idV).set(Date.now());
 
             document.getElementById('bill_details').innerHTML = `الأيدي: ${idV}<br>الوكيل: ${agV}<br>المبلغ: ${usdV}$<br>التاريخ: ${dS}`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
@@ -143,7 +146,8 @@
     }
 
     function finish(k, w, id) {
-        db.ref("MOLOOK_V35_ORDERS").child(k).remove();
+        db.ref("MOLOOK_V32_ORDERS").child(k).update({ status: 'paid' });
+        if(s.gs) fetch(`${s.gs}?action=UPDATE&ID=${id}`, { mode: 'no-cors' });
         let p = w.replace(/\D/g, ''); if (p.startsWith('01')) p = '2' + p;
         window.open(`https://wa.me/${p}?text=تم التحويل بنجاح ✅`, '_blank');
     }
