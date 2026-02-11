@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v33.0 - التحويل السريع</title>
+    <title>ملوك الروقان v34.0 - النهائي</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -13,12 +13,13 @@
         .container { background: var(--card); border: 2px solid var(--gold); border-radius: 20px; padding: 20px; width: 100%; max-width: 500px; position: relative; }
         #adminPanel { display: none; position: absolute; inset: 0; background: #000; border: 2px solid var(--gold); border-radius: 20px; z-index: 9999; padding: 20px; overflow-y: auto; }
         .admin-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+        .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 15px; margin-bottom: 10px; }
+        .order-info { margin-bottom: 10px; line-height: 1.6; }
+        .order-info b { color: var(--gold); }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 8px; }
         .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-wa { background: #25d366; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 900; }
-        /* زر الدفع الجديد */
-        .btn-pay { background: #e60000; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 900; grid-column: span 2; margin-bottom: 5px; }
+        .btn-pay { background: #e60000; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 900; grid-column: span 2; margin-bottom: 5px; font-size: 16px; }
         input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; margin-bottom: 15px; outline: none; }
         label { display: block; margin-bottom: 6px; color: var(--gold); font-weight: bold; }
         .result-box { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 18px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 24px; margin-bottom: 15px; }
@@ -69,6 +70,7 @@
 <div id="overlay"><div class="bill-vip"><h2 style="text-align:center;">ملوك الروقان</h2><div id="bill_details" style="margin:20px 0;"></div><div style="background:#000; color:#d4af37; text-align:center; padding:15px; border-radius:12px; font-size:24px; font-weight:900;" id="bill_total">0.00 EGP</div><button class="btn-send" style="margin-top:20px; background:#000; color:#fff;" onclick="location.reload()">تم ✅</button></div></div>
 
 <script>
+    // الحفاظ على بيانات الفايربيز كما هي في الشات
     const firebaseConfig = { apiKey: "AIzaSyD-XYPHc4sEHYqDYrz72KrqxPNPihc0CFA", authDomain: "molook-51d9e.firebaseapp.com", projectId: "molook-51d9e", databaseURL: "https://molook-51d9e-default-rtdb.firebaseio.com/", storageBucket: "molook-51d9e.firebasestorage.app", messagingSenderId: "646971816528", appId: "1:646971816528:web:44c5c4f9bd370963dc6f55" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -92,15 +94,20 @@
         if(snap.val()) {
             Object.keys(snap.val()).reverse().forEach(k => {
                 const o = snap.val()[k];
+                // تعديل العرض: الأيدي لوحده والمبلغ لوحده مع تسمية واضحة
                 const h = `<div class="order-card">
-                    ID: ${o.id} | ${o.egp} ج.م<br>${o.wallet} (${o.method})
+                    <div class="order-info">
+                        <b>🆔 الأيدي:</b> ${o.id}<br>
+                        <b>💰 المبلغ:</b> ${o.egp} ج.م<br>
+                        <b>📱 الرقم:</b> ${o.wallet} (${o.method})
+                    </div>
                     ${o.status !== 'paid' ? `
                     <div class="btn-group">
                         <button class="btn-pay" onclick="vodaPay('${o.wallet}', '${Math.round(o.egp)}')">دفع فودافون 💳</button>
                         <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('تم النسخ')">نسخ</button>
                         <button class="btn-wa" onclick="finish('${k}','${o.wallet}','${o.id}')">واتساب ✅</button>
                     </div>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
-                    <button style="width:100%; margin-top:5px; font-size:10px; opacity:0.5;" onclick="db.ref('MOLOOK_V32_ORDERS').child('${k}').remove()">حذف</button>
+                    <button style="width:100%; margin-top:10px; font-size:10px; opacity:0.3; background:none; color:white; border:1px solid #333;" onclick="db.ref('MOLOOK_V32_ORDERS').child('${k}').remove()">حذف نهائي</button>
                 </div>`;
                 if(o.status === 'paid') plist.innerHTML += h; else list.innerHTML += h;
             });
@@ -108,7 +115,6 @@
     });
 
     function vodaPay(num, amount) {
-        // كود تحويل فودافون كاش المختصر
         const ussd = `*9*7*${num}*${amount}%23`; 
         window.location.href = `tel:${ussd}`;
     }
