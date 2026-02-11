@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v32.0 - النهائي</title>
+    <title>ملوك الروقان v33.0 - التحويل السريع</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -14,9 +14,11 @@
         #adminPanel { display: none; position: absolute; inset: 0; background: #000; border: 2px solid var(--gold); border-radius: 20px; z-index: 9999; padding: 20px; overflow-y: auto; }
         .admin-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .btn-group { display: flex; gap: 5px; margin-top: 8px; }
-        .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; font-weight: bold; }
-        .btn-wa { background: #25d366; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 2; font-weight: 900; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 8px; }
+        .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-wa { background: #25d366; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 900; }
+        /* زر الدفع الجديد */
+        .btn-pay { background: #e60000; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 900; grid-column: span 2; margin-bottom: 5px; }
         input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; margin-bottom: 15px; outline: none; }
         label { display: block; margin-bottom: 6px; color: var(--gold); font-weight: bold; }
         .result-box { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 18px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 24px; margin-bottom: 15px; }
@@ -43,7 +45,7 @@
         </div>
         <div class="admin-box"><h4>📩 الطلبات</h4><div id="ordersList"></div></div>
         <div class="admin-box"><h4>✅ الأرشيف</h4><div id="paidList"></div></div>
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; color:#777; padding:15px; cursor:pointer; background:none; border:none;">إغلاق</button>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; color:#777; padding:15px; background:none; border:none; cursor:pointer;">إغلاق</button>
     </div>
 
     <div class="header" onclick="openAdmin()" style="text-align:center; cursor:pointer;"><h1 style="color:var(--gold); font-size:32px; margin:0; font-weight:900;">ملوك الروقان</h1></div>
@@ -92,16 +94,24 @@
                 const o = snap.val()[k];
                 const h = `<div class="order-card">
                     ID: ${o.id} | ${o.egp} ج.م<br>${o.wallet} (${o.method})
-                    ${o.status !== 'paid' ? `<div class="btn-group">
-                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('نسخ')">نسخ</button>
+                    ${o.status !== 'paid' ? `
+                    <div class="btn-group">
+                        <button class="btn-pay" onclick="vodaPay('${o.wallet}', '${Math.round(o.egp)}')">دفع فودافون 💳</button>
+                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('تم النسخ')">نسخ</button>
                         <button class="btn-wa" onclick="finish('${k}','${o.wallet}','${o.id}')">واتساب ✅</button>
                     </div>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
-                    <button style="width:100%; margin-top:5px; font-size:10px;" onclick="db.ref('MOLOOK_V32_ORDERS').child('${k}').remove()">حذف</button>
+                    <button style="width:100%; margin-top:5px; font-size:10px; opacity:0.5;" onclick="db.ref('MOLOOK_V32_ORDERS').child('${k}').remove()">حذف</button>
                 </div>`;
                 if(o.status === 'paid') plist.innerHTML += h; else list.innerHTML += h;
             });
         }
     });
+
+    function vodaPay(num, amount) {
+        // كود تحويل فودافون كاش المختصر
+        const ussd = `*9*7*${num}*${amount}%23`; 
+        window.location.href = `tel:${ussd}`;
+    }
 
     function calculate() {
         const r = (document.getElementById('u_usd').value * (s.rv || 0)).toFixed(2);
@@ -120,13 +130,9 @@
 
     function finish(k, w, id) {
         db.ref("MOLOOK_V32_ORDERS").child(k).update({ status: 'paid' });
-        // تحديث الحالة في الشيت
         if(s.gs) fetch(`${s.gs}?action=UPDATE&ID=${id}`, { mode: 'no-cors' });
-        
-        // معالجة الرقم للواتساب (مصري أو دولي)
         let p = w.replace(/\D/g, '');
-        if (p.startsWith('01')) p = '2' + p; // مصري
-        else if (p.startsWith('09')) p = '963' + p; // سوري كمثال
+        if (p.startsWith('01')) p = '2' + p; else if (p.startsWith('09')) p = '963' + p;
         window.open(`https://wa.me/${p}?text=${encodeURIComponent('تم التحويل بنجاح ✅')}`, '_blank');
     }
 
@@ -140,7 +146,6 @@
         const now = new Date(), dS = now.toLocaleDateString('ar-EG'), dy = now.toLocaleDateString('ar-EG', {weekday: 'long'});
 
         try {
-            // تلجرام
             const cap = `👑 طلب جديد\n🆔 ID: ${idV}\n💵 مبلغ: ${usdV}$\n💰 مصري: ${egp}\n📱 رقم: ${walV}\n👤 وكيل: ${agV}\n📅 ${dy} | ${dS}`;
             [s.b1, s.b2, s.b3, s.b4].filter(b => b).forEach(bot => {
                 s.b_ids.split(',').forEach(cid => {
@@ -148,13 +153,10 @@
                     fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd });
                 });
             });
-
-            // إرسال للشيت (بالترتيب الجديد المتوافق مع عواميدك A-I)
             if(s.gs) {
                 const url = `${s.gs}?id=${encodeURIComponent(idV)}&usd=${encodeURIComponent(usdV)}&egp=${encodeURIComponent(egp)}&method=${encodeURIComponent(methV)}&wallet=${encodeURIComponent(walV)}&date=${encodeURIComponent(dS)}&day=${encodeURIComponent(dy)}&agent=${encodeURIComponent(agV)}`;
                 fetch(url, { method: 'POST', mode: 'no-cors' });
             }
-
             await db.ref("MOLOOK_V32_ORDERS").push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending' });
             document.getElementById('bill_details').innerHTML = `الأيدي: ${idV}<br>الوكيل: ${agV}<br>المبلغ: ${usdV}$<br>التاريخ: ${dS}`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
