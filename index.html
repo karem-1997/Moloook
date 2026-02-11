@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان - النسخة الملكية النهائية</title>
+    <title>ملوك الروقان v18.0</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -11,33 +11,26 @@
         :root { --gold: #d4af37; --bg: #0a0a0a; --card: #141414; --inp: #1e1e1e; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; display: flex; justify-content: center; }
         .container { background: var(--card); border: 2px solid var(--gold); border-radius: 20px; padding: 20px; width: 100%; max-width: 500px; position: relative; box-shadow: 0 0 30px rgba(212,175,55,0.2); }
-        
         #adminPanel { display: none; position: absolute; inset: 0; background: #000; border: 2px solid var(--gold); border-radius: 20px; z-index: 9999; padding: 20px; overflow-y: auto; }
         .admin-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .admin-box h4 { color: var(--gold); margin: 0 0 10px 0; border-bottom: 1px solid #333; }
-        
         .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
         .order-card.paid { border-right-color: #25d366; opacity: 0.7; }
-        
         .btn-group { display: flex; gap: 5px; margin-top: 8px; }
         .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; font-family: 'Cairo'; font-weight: bold; }
         .btn-wa { background: #25d366; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 2; font-family: 'Cairo'; font-weight: 900; }
         .btn-del { background: rgba(255,77,77,0.1); color: #ff4d4d; border: 1px solid #ff4d4d; padding: 5px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-size: 11px; }
-
         .header { text-align: center; margin-bottom: 10px; cursor: pointer; }
         .header h1 { color: var(--gold); font-size: 32px; margin: 0; font-weight: 900; text-shadow: 0 0 15px rgba(212,175,55,0.5); }
         .status-bar { display: flex; justify-content: space-around; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--gold); font-size: 14px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; color: var(--gold); font-weight: bold; }
         input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; outline: none; }
-        
         .result-box { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 18px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 24px; margin: 20px 0; }
         .btn-send { width: 100%; padding: 18px; background: var(--gold); border: none; border-radius: 15px; color: #000; font-weight: 900; font-size: 20px; cursor: pointer; }
-
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 10000; align-items: center; justify-content: center; }
         .bill-vip { background: #fff; color: #000; padding: 25px; border-radius: 20px; width: 85%; max-width: 380px; border: 4px solid var(--gold); position: relative; }
         .bill-vip h2 { text-align: center; margin: 0; color: #000; font-weight: 900; }
-        .bill-vip p { text-align: center; font-size: 11px; color: #666; margin: 5px 0 15px 0; }
         .bill-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 7px 0; font-size: 13px; }
         .bill-total-box { background: #000; color: var(--gold); text-align: center; padding: 15px; border-radius: 12px; margin-top: 15px; font-size: 20px; font-weight: 900; }
     </style>
@@ -50,9 +43,8 @@
         <div class="admin-box">
             <h4>⚙️ الإعدادات</h4>
             <label>سعر الدولار:</label><input type="number" id="c_rv">
-            <label>توكنات التلجرام (1-4):</label>
-            <input type="text" id="c_b1" placeholder="Bot 1"><input type="text" id="c_b2" placeholder="Bot 2">
-            <input type="text" id="c_b3" placeholder="Bot 3"><input type="text" id="c_b4" placeholder="Bot 4">
+            <label>بوتات التلجرام:</label>
+            <input type="text" id="c_b1"><input type="text" id="c_b2">
             <label>Chat IDs:</label><input type="text" id="c_b_ids">
             <label>رابط الشيت:</label><input type="text" id="c_gs">
             <label>ID السحب:</label><input type="text" id="c_aid">
@@ -60,7 +52,7 @@
             <button class="btn-send" onclick="saveSettings()" style="margin-top:10px; font-size:16px;">حفظ الإعدادات ✅</button>
         </div>
         <div class="admin-box"><h4>📩 طلبات جديدة</h4><div id="ordersList"></div></div>
-        <div class="admin-box"><h4>✅ الأرشيف (تم الدفع)</h4><div id="paidOrdersList"></div></div>
+        <div class="admin-box"><h4>✅ الأرشيف</h4><div id="paidOrdersList"></div></div>
         <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; color:#777; border:none; padding:15px; background:none; cursor:pointer;">إغلاق</button>
     </div>
 
@@ -84,7 +76,6 @@
     <div class="result-box" id="res_egp">0.00 ج.م</div>
     <div class="form-group"><label>رقم المحفظة</label><input type="text" id="u_wallet"></div>
     <div class="form-group"><label>إثبات السحب</label><input type="file" id="u_pic" accept="image/*"></div>
-    
     <button class="btn-send" onclick="sendOrder()" id="btnSend">تأكيد وإرسال الطلب 🚀</button>
 </div>
 
@@ -103,8 +94,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    const PATH_CONF = "MOLOOK_FINAL_SETTINGS"; 
-    const PATH_ORDR = "MOLOOK_FINAL_ORDERS";
+    const PATH_CONF = "MOLOOK_V18_SETTINGS"; 
+    const PATH_ORDR = "MOLOOK_V18_ORDERS";
 
     let s = { rv: 45, aid: '---', aname: '---', gs: '', b1: '', b2: '', b3: '', b4: '', b_ids: '' };
 
@@ -115,7 +106,6 @@
             document.getElementById('v_aname').innerText = s.aname;
             document.getElementById('c_rv').value = s.rv;
             document.getElementById('c_b1').value = s.b1; document.getElementById('c_b2').value = s.b2;
-            document.getElementById('c_b3').value = s.b3; document.getElementById('c_b4').value = s.b4;
             document.getElementById('c_b_ids').value = s.b_ids; document.getElementById('c_gs').value = s.gs;
             document.getElementById('c_aid').value = s.aid; document.getElementById('c_aname').value = s.aname;
         }
@@ -133,7 +123,7 @@
                         <div class="btn-group">
                             <button class="btn-copy" onclick="copyNum('${o.wallet}')">نسخ 📋</button>
                             <button class="btn-wa" onclick="goWa('${k}', '${o.wallet}', '${o.egp}', '${o.id}')">واتساب ✅</button>
-                        </div>` : `<b style="color:#25d366">تم الدفع فـ ${o.p_date || ''} ✅</b>`}
+                        </div>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
                     <button class="btn-del" onclick="deleteOrder('${k}')">حذف</button>
                 </div>`;
                 if(o.status === 'paid') paidList.innerHTML += html; else list.innerHTML += html;
@@ -149,12 +139,20 @@
     
     function goWa(key, wallet, egp, userId) {
         const now = new Date();
-        const pDate = now.toLocaleDateString('ar-EG') + " " + now.toLocaleTimeString('ar-EG');
-        db.ref(PATH_ORDR).child(key).update({ status: 'paid', p_date: pDate });
+        const pTime = now.toLocaleTimeString('ar-EG');
+        db.ref(PATH_ORDR).child(key).update({ status: 'paid', p_date: pTime });
 
-        // إضافة سطر جديد للشيت لتحديث الحالة
+        // إرسال تحديث للحالة في نفس السطر
         if(s.gs) {
-            fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify({"data": [{"ID": userId, "status": "تم الدفع ✅", "payment_time": pDate}]}) });
+            fetch(s.gs, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify({
+                    "action": "UPDATE_STATUS",
+                    "ID": userId,
+                    "status": "تم الدفع ✅"
+                }) 
+            });
         }
 
         let p = wallet.replace(/\D/g, '');
@@ -165,7 +163,7 @@
     function deleteOrder(k) { if(confirm("حذف؟")) db.ref(PATH_ORDR).child(k).remove(); }
     function openAdmin() { if(prompt("الباسورد:") === "1987") document.getElementById('adminPanel').style.display='block'; }
     function saveSettings() {
-        const d = { rv: document.getElementById('c_rv').value, b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value, b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value, b_ids: document.getElementById('c_b_ids').value, gs: document.getElementById('c_gs').value, aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value };
+        const d = { rv: document.getElementById('c_rv').value, b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value, b_ids: document.getElementById('c_b_ids').value, gs: document.getElementById('c_gs').value, aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value };
         db.ref(PATH_CONF).set(d).then(() => alert("تم الحفظ ✅"));
     }
 
@@ -178,15 +176,18 @@
 
         try {
             await db.ref(PATH_ORDR).push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending', agent: agV, date: dateS, day: dayS });
-            const cap = `👑 ملوك الروقان\n🆔 ID: ${idV}\n👤 وكيل: ${agV}\n💵 مبلغ: ${usdV}$ (${egp} ج.م)\n💳 طريقة: ${methV}\n📱 رقم: ${walV}\n📅 اليوم: ${dayS}\n📆 التاريخ: ${dateS}\n⏰ الوقت: ${timeS}`;
-            const bots = [s.b1, s.b2, s.b3, s.b4].filter(b => b);
-            bots.forEach(bot => {
+            const cap = `👑 ملوك الروقان\n🆔 ID: ${idV}\n👤 وكيل: ${agV}\n💵 مبلغ: ${usdV}$ (${egp} ج.م)\n💳 طريقة: ${methV}\n📱 رقم: ${walV}\n📅 اليوم: ${dayS}\n📆 التاريخ: ${dateS}`;
+            
+            // إرسال تلجرام
+            [s.b1, s.b2].filter(b => b).forEach(bot => {
                 s.b_ids.split(',').forEach(cid => {
                     const fd = new FormData(); fd.append('chat_id', cid.trim()); fd.append('photo', pic); fd.append('caption', cap);
                     fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd });
                 });
             });
-            if(s.gs) fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify({"data": [{"ID": idV, "usd": usdV, "egp": egp, "method": methV, "wallet": walV, "agent": agV, "date": dateS, "day": dayS, "status": "بانتظار الدفع ⏳"}]}) });
+
+            // إرسال للشيت (طلب جديد)
+            if(s.gs) fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify({"action": "NEW_ORDER", "data": [{"ID": idV, "usd": usdV, "egp": egp, "method": methV, "wallet": walV, "agent": agV, "date": dateS, "day": dayS, "status": "بانتظار الدفع"}]}) });
 
             document.getElementById('bill_details').innerHTML = `<div class="bill-row"><span>الأيدي:</span> <b>${idV}</b></div><div class="bill-row"><span>المبلغ ($):</span> <b>${usdV} $</b></div><div class="bill-row"><span>اليوم:</span> <b>${dayS}</b></div><div class="bill-row"><span>التاريخ:</span> <b>${dateS}</b></div>`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
