@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v30.0 - FINAL</title>
+    <title>ملوك الروقان v31.0</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -14,14 +14,13 @@
         #adminPanel { display: none; position: absolute; inset: 0; background: #000; border: 2px solid var(--gold); border-radius: 20px; z-index: 9999; padding: 20px; overflow-y: auto; }
         .admin-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .admin-box h4 { color: var(--gold); margin: 0 0 10px 0; border-bottom: 1px solid #333; }
-        .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
+        .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
         .btn-group { display: flex; gap: 5px; margin-top: 8px; }
         .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; font-weight: bold; }
         .btn-wa { background: #25d366; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 2; font-weight: 900; }
-        .btn-del { background: rgba(255,77,77,0.1); color: #ff4d4d; border: 1px solid #ff4d4d; padding: 5px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; }
-        .status-bar { display: flex; justify-content: space-around; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 15px; border: 1px solid var(--gold); margin-bottom: 20px; font-size: 14px; }
-        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; margin-bottom: 10px; }
-        .result-box { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 18px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 24px; margin: 20px 0; }
+        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; margin-bottom: 15px; outline: none; }
+        label { display: block; margin-bottom: 6px; color: var(--gold); font-weight: bold; }
+        .result-box { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 18px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 24px; margin-bottom: 15px; }
         .btn-send { width: 100%; padding: 18px; background: var(--gold); border: none; border-radius: 15px; color: #000; font-weight: 900; font-size: 20px; cursor: pointer; }
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 10000; align-items: center; justify-content: center; }
         .bill-vip { background: #fff; color: #000; padding: 25px; border-radius: 20px; width: 85%; max-width: 380px; border: 4px solid var(--gold); }
@@ -36,11 +35,12 @@
             <h4>⚙️ الإعدادات</h4>
             <label>سعر الدولار:</label><input type="number" id="c_rv">
             <label>رابط الشيت:</label><input type="text" id="c_gs">
-            <label>ID السحب:</label><input type="text" id="c_aid"><label>المستلم:</label><input type="text" id="c_aname">
-            <h4>🤖 البوتات (1-4)</h4>
-            <input type="text" id="c_b1" placeholder="Token 1"><input type="text" id="c_b2" placeholder="Token 2">
-            <input type="text" id="c_b3" placeholder="Token 3"><input type="text" id="c_b4" placeholder="Token 4">
-            <label>Chat IDs (فصل بفاصلة):</label><input type="text" id="c_b_ids">
+            <label>ID السحب:</label><input type="text" id="c_aid">
+            <label>اسم المستلم:</label><input type="text" id="c_aname">
+            <h4>🤖 البوتات والـ IDs</h4>
+            <input type="text" id="c_b1" placeholder="Bot 1"><input type="text" id="c_b2" placeholder="Bot 2">
+            <input type="text" id="c_b3" placeholder="Bot 3"><input type="text" id="c_b4" placeholder="Bot 4">
+            <input type="text" id="c_b_ids" placeholder="Chat IDs (فصل بفاصلة)">
             <button class="btn-send" onclick="saveSettings()" style="font-size:16px;">حفظ ✅</button>
         </div>
         <div class="admin-box"><h4>📩 الطلبات</h4><div id="ordersList"></div></div>
@@ -48,26 +48,44 @@
         <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; color:#777; padding:15px; cursor:pointer; background:none; border:none;">إغلاق</button>
     </div>
 
-    <div class="header" onclick="openAdmin()" style="text-align:center; cursor:pointer;"><h1 style="color:var(--gold); font-size:32px; margin:0;">ملوك الروقان</h1></div>
-    <div class="status-bar">
+    <div class="header" onclick="openAdmin()" style="text-align:center; cursor:pointer;"><h1 style="color:var(--gold); font-size:32px; margin:0; font-weight:900;">ملوك الروقان</h1></div>
+    
+    <div style="display: flex; justify-content: space-around; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 15px; border: 1px solid var(--gold); margin: 20px 0; font-size: 14px;">
         <div>🆔 سحب: <b id="v_aid">---</b></div>
         <div>👤 مستلم: <b id="v_aname">---</b></div>
     </div>
 
-    <input type="text" id="u_id" placeholder="الأيدي (ID)">
-    <input type="text" id="u_agent" placeholder="اسم الوكيل">
-    <select id="u_method"><option value="فودافون كاش">فودافون كاش</option><option value="أورنج كاش">أورنج كاش</option><option value="اتصالات كاش">اتصالات كاش</option></select>
-    <input type="number" id="u_usd" placeholder="المبلغ المطلوب ($)" oninput="calculate()">
+    <label>الأيدي الخاص بك (ID)</label>
+    <input type="text" id="u_id">
+
+    <label>اسم الوكيل (اختياري)</label>
+    <input type="text" id="u_agent">
+
+    <label>طريقة الاستلام</label>
+    <select id="u_method">
+        <option value="فودافون كاش">فودافون كاش</option>
+        <option value="أورنج كاش">أورنج كاش</option>
+        <option value="اتصالات كاش">اتصالات كاش</option>
+    </select>
+
+    <label>المبلغ المطلوب ($)</label>
+    <input type="number" id="u_usd" oninput="calculate()">
+
     <div class="result-box" id="res_egp">0.00 ج.م</div>
-    <input type="text" id="u_wallet" placeholder="رقم المحفظة">
+
+    <label>رقم المحفظة</label>
+    <input type="text" id="u_wallet">
+
+    <label>إثبات السحب</label>
     <input type="file" id="u_pic" accept="image/*">
-    <button class="btn-send" onclick="sendOrder()" id="btnSend">تأكيد وإرسال 🚀</button>
+
+    <button class="btn-send" onclick="sendOrder()" id="btnSend">تأكيد وإرسال الطلب 🚀</button>
 </div>
 
 <div id="overlay">
     <div class="bill-vip">
-        <h2 style="text-align:center;">إيصال سحب</h2>
-        <div id="bill_details" style="margin:20px 0; font-size:14px;"></div>
+        <h2 style="text-align:center;">ملوك الروقان</h2>
+        <div id="bill_details" style="margin:20px 0; line-height: 1.8;"></div>
         <div style="background:#000; color:#d4af37; text-align:center; padding:15px; border-radius:12px; font-size:24px; font-weight:900;" id="bill_total">0.00 EGP</div>
         <button class="btn-send" style="margin-top:20px; background:#000; color:#fff;" onclick="location.reload()">تم ✅</button>
     </div>
@@ -79,7 +97,7 @@
     const db = firebase.database();
 
     let s = {};
-    db.ref("MOLOOK_V30_CONFIG").on('value', snap => {
+    db.ref("MOLOOK_V31_SETTINGS").on('value', snap => {
         s = snap.val() || {};
         document.getElementById('v_aid').innerText = s.aid || '---';
         document.getElementById('v_aname').innerText = s.aname || '---';
@@ -91,7 +109,7 @@
         document.getElementById('c_aid').value = s.aid || ''; document.getElementById('c_aname').value = s.aname || '';
     });
 
-    db.ref("MOLOOK_V30_ORDERS").on('value', snap => {
+    db.ref("MOLOOK_V31_ORDERS").on('value', snap => {
         const list = document.getElementById('ordersList'), plist = document.getElementById('paidList');
         list.innerHTML = ""; plist.innerHTML = "";
         if(snap.val()) {
@@ -100,10 +118,10 @@
                 const h = `<div class="order-card">
                     ID: ${o.id} | ${o.egp} ج.م<br>${o.wallet} (${o.method})
                     ${o.status !== 'paid' ? `<div class="btn-group">
-                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('نسخ')">نسخ</button>
+                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('تم النسخ')">نسخ</button>
                         <button class="btn-wa" onclick="finish('${k}','${o.wallet}','${o.egp}')">واتساب ✅</button>
-                    </div>` : `<b style="color:#25d366">تم الدفع</b>`}
-                    <button class="btn-del" onclick="db.ref('MOLOOK_V30_ORDERS').child('${k}').remove()">حذف</button>
+                    </div>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
+                    <button class="btn-del" onclick="db.ref('MOLOOK_V31_ORDERS').child('${k}').remove()">حذف</button>
                 </div>`;
                 if(o.status === 'paid') plist.innerHTML += h; else list.innerHTML += h;
             });
@@ -116,7 +134,7 @@
     }
 
     function saveSettings() {
-        db.ref("MOLOOK_V30_CONFIG").set({
+        db.ref("MOLOOK_V31_SETTINGS").set({
             rv: document.getElementById('c_rv').value, gs: document.getElementById('c_gs').value,
             b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value,
             b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value,
@@ -126,8 +144,8 @@
     }
 
     function finish(k, w, e) {
-        db.ref("MOLOOK_V30_ORDERS").child(k).update({ status: 'paid' });
-        window.open(`https://wa.me/${w.replace(/\D/g,'')}?text=تم تحويل ${e} ج.م بنجاح ✅`, '_blank');
+        db.ref("MOLOOK_V31_ORDERS").child(k).update({ status: 'paid' });
+        window.open(`https://wa.me/${w.replace(/\D/g,'')}?text=تم التحويل بنجاح ✅`, '_blank');
     }
 
     function openAdmin() { if(prompt("الباسورد:") === "1987") document.getElementById('adminPanel').style.display='block'; }
@@ -136,11 +154,12 @@
         const idV = document.getElementById('u_id').value, usdV = document.getElementById('u_usd').value, walV = document.getElementById('u_wallet').value, pic = document.getElementById('u_pic').files[0];
         if(!idV || !usdV || !walV || !pic) return alert("أكمل البيانات!");
         const btn = document.getElementById('btnSend'); btn.disabled = true;
-        const egp = calculate(), now = new Date(), dS = now.toLocaleDateString('ar-EG'), dy = now.toLocaleDateString('ar-EG', {weekday: 'long'});
+        const egp = calculate(), agV = document.getElementById('u_agent').value || "تلقائي", methV = document.getElementById('u_method').value;
+        const now = new Date(), dS = now.toLocaleDateString('ar-EG'), dy = now.toLocaleDateString('ar-EG', {weekday: 'long'});
 
         try {
-            // تلجرام مباشر
-            const cap = `👑 طلب جديد\n🆔 ID: ${idV}\n💵 مبلغ: ${usdV}$\n💰 مصري: ${egp}\n📱 رقم: ${walV}\n📅 ${dy} | ${dS}`;
+            // تلجرام
+            const cap = `👑 طلب جديد\n🆔 ID: ${idV}\n💵 مبلغ: ${usdV}$\n💰 مصري: ${egp}\n📱 رقم: ${walV}\n👤 وكيل: ${agV}\n📅 ${dy} | ${dS}`;
             [s.b1, s.b2, s.b3, s.b4].filter(b => b).forEach(bot => {
                 s.b_ids.split(',').forEach(cid => {
                     const fd = new FormData(); fd.append('chat_id', cid.trim()); fd.append('photo', pic); fd.append('caption', cap);
@@ -148,18 +167,18 @@
                 });
             });
 
-            // شيت جوجل مباشر (POST JSON)
+            // إرسال للشيت (الطريقة المضمونة)
             if(s.gs) {
-                const body = {"data": [{"ID": idV, "usd": usdV, "egp": egp, "method": document.getElementById('u_method').value, "wallet": walV, "agent": document.getElementById('u_agent').value, "date": dS, "day": dy}]};
-                fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify(body) });
+                const url = `${s.gs}?date=${encodeURIComponent(dS)}&day=${encodeURIComponent(dy)}&id=${encodeURIComponent(idV)}&usd=${encodeURIComponent(usdV)}&egp=${encodeURIComponent(egp)}&method=${encodeURIComponent(methV)}&wallet=${encodeURIComponent(walV)}&agent=${encodeURIComponent(agV)}`;
+                fetch(url, { method: 'POST', mode: 'no-cors' });
             }
 
-            await db.ref("MOLOOK_V30_ORDERS").push({ id: idV, egp: egp, wallet: walV, method: document.getElementById('u_method').value, status: 'pending' });
+            await db.ref("MOLOOK_V31_ORDERS").push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending' });
             
-            document.getElementById('bill_details').innerHTML = `ID: ${idV}<br>Amount: ${usdV}$<br>Date: ${dS}`;
+            document.getElementById('bill_details').innerHTML = `الأيدي: ${idV}<br>الوكيل: ${agV}<br>المبلغ: ${usdV}$<br>التاريخ: ${dS}`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
             document.getElementById('overlay').style.display = 'flex';
-        } catch(e) { alert("خطأ!"); btn.disabled = false; }
+        } catch(e) { alert("حدث خطأ!"); btn.disabled = false; }
     }
 </script>
 </body>
