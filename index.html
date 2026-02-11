@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v31.0</title>
+    <title>ملوك الروقان v32.0 - النهائي</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -13,7 +13,6 @@
         .container { background: var(--card); border: 2px solid var(--gold); border-radius: 20px; padding: 20px; width: 100%; max-width: 500px; position: relative; }
         #adminPanel { display: none; position: absolute; inset: 0; background: #000; border: 2px solid var(--gold); border-radius: 20px; z-index: 9999; padding: 20px; overflow-y: auto; }
         .admin-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .admin-box h4 { color: var(--gold); margin: 0 0 10px 0; border-bottom: 1px solid #333; }
         .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
         .btn-group { display: flex; gap: 5px; margin-top: 8px; }
         .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; font-weight: bold; }
@@ -35,12 +34,11 @@
             <h4>⚙️ الإعدادات</h4>
             <label>سعر الدولار:</label><input type="number" id="c_rv">
             <label>رابط الشيت:</label><input type="text" id="c_gs">
-            <label>ID السحب:</label><input type="text" id="c_aid">
-            <label>اسم المستلم:</label><input type="text" id="c_aname">
+            <label>ID السحب:</label><input type="text" id="c_aid"><label>المستلم:</label><input type="text" id="c_aname">
             <h4>🤖 البوتات والـ IDs</h4>
             <input type="text" id="c_b1" placeholder="Bot 1"><input type="text" id="c_b2" placeholder="Bot 2">
             <input type="text" id="c_b3" placeholder="Bot 3"><input type="text" id="c_b4" placeholder="Bot 4">
-            <input type="text" id="c_b_ids" placeholder="Chat IDs (فصل بفاصلة)">
+            <input type="text" id="c_b_ids" placeholder="Chat IDs">
             <button class="btn-send" onclick="saveSettings()" style="font-size:16px;">حفظ ✅</button>
         </div>
         <div class="admin-box"><h4>📩 الطلبات</h4><div id="ordersList"></div></div>
@@ -55,41 +53,18 @@
         <div>👤 مستلم: <b id="v_aname">---</b></div>
     </div>
 
-    <label>الأيدي الخاص بك (ID)</label>
-    <input type="text" id="u_id">
-
-    <label>اسم الوكيل (اختياري)</label>
-    <input type="text" id="u_agent">
-
+    <label>الأيدي الخاص بك (ID)</label><input type="text" id="u_id">
+    <label>اسم الوكيل (اختياري)</label><input type="text" id="u_agent">
     <label>طريقة الاستلام</label>
-    <select id="u_method">
-        <option value="فودافون كاش">فودافون كاش</option>
-        <option value="أورنج كاش">أورنج كاش</option>
-        <option value="اتصالات كاش">اتصالات كاش</option>
-    </select>
-
-    <label>المبلغ المطلوب ($)</label>
-    <input type="number" id="u_usd" oninput="calculate()">
-
+    <select id="u_method"><option value="فودافون كاش">فودافون كاش</option><option value="أورنج كاش">أورنج كاش</option><option value="اتصالات كاش">اتصالات كاش</option></select>
+    <label>المبلغ المطلوب ($)</label><input type="number" id="u_usd" oninput="calculate()">
     <div class="result-box" id="res_egp">0.00 ج.م</div>
-
-    <label>رقم المحفظة</label>
-    <input type="text" id="u_wallet">
-
-    <label>إثبات السحب</label>
-    <input type="file" id="u_pic" accept="image/*">
-
-    <button class="btn-send" onclick="sendOrder()" id="btnSend">تأكيد وإرسال الطلب 🚀</button>
+    <label>رقم المحفظة</label><input type="text" id="u_wallet">
+    <label>إثبات السحب</label><input type="file" id="u_pic" accept="image/*">
+    <button class="btn-send" onclick="sendOrder()" id="btnSend">تأكيد وإرسال 🚀</button>
 </div>
 
-<div id="overlay">
-    <div class="bill-vip">
-        <h2 style="text-align:center;">ملوك الروقان</h2>
-        <div id="bill_details" style="margin:20px 0; line-height: 1.8;"></div>
-        <div style="background:#000; color:#d4af37; text-align:center; padding:15px; border-radius:12px; font-size:24px; font-weight:900;" id="bill_total">0.00 EGP</div>
-        <button class="btn-send" style="margin-top:20px; background:#000; color:#fff;" onclick="location.reload()">تم ✅</button>
-    </div>
-</div>
+<div id="overlay"><div class="bill-vip"><h2 style="text-align:center;">ملوك الروقان</h2><div id="bill_details" style="margin:20px 0;"></div><div style="background:#000; color:#d4af37; text-align:center; padding:15px; border-radius:12px; font-size:24px; font-weight:900;" id="bill_total">0.00 EGP</div><button class="btn-send" style="margin-top:20px; background:#000; color:#fff;" onclick="location.reload()">تم ✅</button></div></div>
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyD-XYPHc4sEHYqDYrz72KrqxPNPihc0CFA", authDomain: "molook-51d9e.firebaseapp.com", projectId: "molook-51d9e", databaseURL: "https://molook-51d9e-default-rtdb.firebaseio.com/", storageBucket: "molook-51d9e.firebasestorage.app", messagingSenderId: "646971816528", appId: "1:646971816528:web:44c5c4f9bd370963dc6f55" };
@@ -97,7 +72,7 @@
     const db = firebase.database();
 
     let s = {};
-    db.ref("MOLOOK_V31_SETTINGS").on('value', snap => {
+    db.ref("MOLOOK_V32_SETTINGS").on('value', snap => {
         s = snap.val() || {};
         document.getElementById('v_aid').innerText = s.aid || '---';
         document.getElementById('v_aname').innerText = s.aname || '---';
@@ -109,7 +84,7 @@
         document.getElementById('c_aid').value = s.aid || ''; document.getElementById('c_aname').value = s.aname || '';
     });
 
-    db.ref("MOLOOK_V31_ORDERS").on('value', snap => {
+    db.ref("MOLOOK_V32_ORDERS").on('value', snap => {
         const list = document.getElementById('ordersList'), plist = document.getElementById('paidList');
         list.innerHTML = ""; plist.innerHTML = "";
         if(snap.val()) {
@@ -118,10 +93,10 @@
                 const h = `<div class="order-card">
                     ID: ${o.id} | ${o.egp} ج.م<br>${o.wallet} (${o.method})
                     ${o.status !== 'paid' ? `<div class="btn-group">
-                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('تم النسخ')">نسخ</button>
-                        <button class="btn-wa" onclick="finish('${k}','${o.wallet}','${o.egp}')">واتساب ✅</button>
+                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('نسخ')">نسخ</button>
+                        <button class="btn-wa" onclick="finish('${k}','${o.wallet}','${o.id}')">واتساب ✅</button>
                     </div>` : `<b style="color:#25d366">تم الدفع ✅</b>`}
-                    <button class="btn-del" onclick="db.ref('MOLOOK_V31_ORDERS').child('${k}').remove()">حذف</button>
+                    <button style="width:100%; margin-top:5px; font-size:10px;" onclick="db.ref('MOLOOK_V32_ORDERS').child('${k}').remove()">حذف</button>
                 </div>`;
                 if(o.status === 'paid') plist.innerHTML += h; else list.innerHTML += h;
             });
@@ -134,7 +109,7 @@
     }
 
     function saveSettings() {
-        db.ref("MOLOOK_V31_SETTINGS").set({
+        db.ref("MOLOOK_V32_SETTINGS").set({
             rv: document.getElementById('c_rv').value, gs: document.getElementById('c_gs').value,
             b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value,
             b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value,
@@ -143,9 +118,16 @@
         }).then(() => alert("تم الحفظ ✅"));
     }
 
-    function finish(k, w, e) {
-        db.ref("MOLOOK_V31_ORDERS").child(k).update({ status: 'paid' });
-        window.open(`https://wa.me/${w.replace(/\D/g,'')}?text=تم التحويل بنجاح ✅`, '_blank');
+    function finish(k, w, id) {
+        db.ref("MOLOOK_V32_ORDERS").child(k).update({ status: 'paid' });
+        // تحديث الحالة في الشيت
+        if(s.gs) fetch(`${s.gs}?action=UPDATE&ID=${id}`, { mode: 'no-cors' });
+        
+        // معالجة الرقم للواتساب (مصري أو دولي)
+        let p = w.replace(/\D/g, '');
+        if (p.startsWith('01')) p = '2' + p; // مصري
+        else if (p.startsWith('09')) p = '963' + p; // سوري كمثال
+        window.open(`https://wa.me/${p}?text=${encodeURIComponent('تم التحويل بنجاح ✅')}`, '_blank');
     }
 
     function openAdmin() { if(prompt("الباسورد:") === "1987") document.getElementById('adminPanel').style.display='block'; }
@@ -167,18 +149,17 @@
                 });
             });
 
-            // إرسال للشيت (الطريقة المضمونة)
+            // إرسال للشيت (بالترتيب الجديد المتوافق مع عواميدك A-I)
             if(s.gs) {
-                const url = `${s.gs}?date=${encodeURIComponent(dS)}&day=${encodeURIComponent(dy)}&id=${encodeURIComponent(idV)}&usd=${encodeURIComponent(usdV)}&egp=${encodeURIComponent(egp)}&method=${encodeURIComponent(methV)}&wallet=${encodeURIComponent(walV)}&agent=${encodeURIComponent(agV)}`;
+                const url = `${s.gs}?id=${encodeURIComponent(idV)}&usd=${encodeURIComponent(usdV)}&egp=${encodeURIComponent(egp)}&method=${encodeURIComponent(methV)}&wallet=${encodeURIComponent(walV)}&date=${encodeURIComponent(dS)}&day=${encodeURIComponent(dy)}&agent=${encodeURIComponent(agV)}`;
                 fetch(url, { method: 'POST', mode: 'no-cors' });
             }
 
-            await db.ref("MOLOOK_V31_ORDERS").push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending' });
-            
+            await db.ref("MOLOOK_V32_ORDERS").push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending' });
             document.getElementById('bill_details').innerHTML = `الأيدي: ${idV}<br>الوكيل: ${agV}<br>المبلغ: ${usdV}$<br>التاريخ: ${dS}`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
             document.getElementById('overlay').style.display = 'flex';
-        } catch(e) { alert("حدث خطأ!"); btn.disabled = false; }
+        } catch(e) { alert("خطأ!"); btn.disabled = false; }
     }
 </script>
 </body>
