@@ -153,7 +153,10 @@
         window.open(`https://wa.me/${p}?text=${encodeURIComponent('تم تحويل ' + egp + ' ج.م بنجاح ✅')}`, '_blank');
     }
     function deleteOrder(k) { if(confirm("حذف؟")) db.ref(PATH_ORDR).child(k).remove(); }
-    function openAdmin() { if(prompt("الباسورد:") === "ali@200200") document.getElementById('adminPanel').style.display='block'; }
+    
+    // تم تعديل الباسورد هنا إلى 1987
+    function openAdmin() { if(prompt("الباسورد:") === "1987") document.getElementById('adminPanel').style.display='block'; }
+    
     function saveSettings() {
         const d = { rv: document.getElementById('c_rv').value, b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value, b3: document.getElementById('c_b3').value, b4: document.getElementById('c_b4').value, b_ids: document.getElementById('c_b_ids').value, gs: document.getElementById('c_gs').value, aid: document.getElementById('c_aid').value, aname: document.getElementById('c_aname').value };
         db.ref(PATH_CONF).set(d).then(() => alert("تم الحفظ ✅"));
@@ -168,8 +171,6 @@
 
         try {
             await db.ref(PATH_ORDR).push({ id: idV, egp: egp, wallet: walV, method: methV, status: 'pending', agent: agV, date: dateS, day: dayS });
-            
-            // تلجرام - إضافة التاريخ واليوم
             const cap = `👑 ملوك الروقان\n🆔 ID: ${idV}\n👤 وكيل: ${agV}\n💵 مبلغ: ${usdV}$ (${egp} ج.م)\n💳 طريقة: ${methV}\n📱 رقم: ${walV}\n📅 اليوم: ${dayS}\n📆 التاريخ: ${dateS}\n⏰ الوقت: ${timeS}`;
             const bots = [s.b1, s.b2, s.b3, s.b4].filter(b => b);
             bots.forEach(bot => {
@@ -178,8 +179,6 @@
                     fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd });
                 });
             });
-
-            // إرسال للشيت - إضافة التاريخ واليوم
             if(s.gs) fetch(s.gs, { method: 'POST', mode: 'no-cors', body: JSON.stringify({"data": [{"ID": idV, "usd": usdV, "egp": egp, "method": methV, "wallet": walV, "agent": agV, "date": dateS, "day": dayS, "time": timeS}]}) });
 
             document.getElementById('bill_details').innerHTML = `<div class="bill-row"><span>الأيدي:</span> <b>${idV}</b></div><div class="bill-row"><span>المبلغ ($):</span> <b>${usdV} $</b></div><div class="bill-row"><span>المحفظة:</span> <b>${walV}</b></div><div class="bill-row"><span>اليوم:</span> <b>${dayS}</b></div><div class="bill-row"><span>التاريخ:</span> <b>${dateS}</b></div>`;
