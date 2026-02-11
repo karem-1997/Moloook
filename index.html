@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v37.0 - المعتمد</title>
+    <title>ملوك الروقان v38.0 - إصلاح التليجرام</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -34,13 +34,15 @@
         <div class="admin-box">
             <h4>⚙️ الإعدادات</h4>
             <label>سعر الدولار:</label><input type="number" id="c_rv">
-            <label>رابط الشيت (جديد):</label><input type="text" id="c_gs">
-            <label>🚫 أيام منع التكرار (0 للقفل):</label><input type="number" id="c_limit">
+            <label>رابط الشيت:</label><input type="text" id="c_gs">
+            <label>🚫 أيام منع التكرار:</label><input type="number" id="c_limit">
             <label>ID السحب:</label><input type="text" id="c_aid"><label>المستلم:</label><input type="text" id="c_aname">
             <h4>🤖 البوتات والـ IDs</h4>
-            <input type="text" id="c_b1" placeholder="Bot 1"><input type="text" id="c_b2" placeholder="Bot 2">
-            <input type="text" id="c_b3" placeholder="Bot 3"><input type="text" id="c_b4" placeholder="Bot 4">
-            <input type="text" id="c_b_ids" placeholder="Chat IDs">
+            <input type="text" id="c_b1" placeholder="Bot 1 token">
+            <input type="text" id="c_b2" placeholder="Bot 2 token">
+            <input type="text" id="c_b3" placeholder="Bot 3 token">
+            <input type="text" id="c_b4" placeholder="Bot 4 token">
+            <input type="text" id="c_b_ids" placeholder="Chat IDs (كومة بين كل ID)">
             <button class="btn-send" onclick="saveSettings()">حفظ الإعدادات ✅</button>
         </div>
         <div class="admin-box"><h4>📩 الطلبات</h4><div id="ordersList"></div></div>
@@ -129,17 +131,28 @@
         const now = new Date(), dS = now.toLocaleDateString('ar-EG'), dy = now.toLocaleDateString('ar-EG', {weekday: 'long'});
 
         try {
-            // تليجرام
+            // كود إرسال التليجرام المطور (إصلاح مشكلة عدم الوصول)
             const cap = `👑 طلب جديد\n🆔 ID: ${idV}\n💵 مبلغ: ${usdV}$\n💰 مصري: ${egp}\n📱 رقم: ${walV}\n👤 وكيل: ${agV}\n📅 ${dy} | ${dS}`;
-            const bots = [s.b1, s.b2, s.b3, s.b4].filter(b => b);
-            const cids = s.b_ids.split(',').map(c => c.trim());
+            const bots = [s.b1, s.b2, s.b3, s.b4].filter(b => b && b.trim() !== "");
+            const cids = s.b_ids ? s.b_ids.split(',').map(c => c.trim()).filter(c => c !== "") : [];
             
-            bots.forEach(bot => {
-                cids.forEach(cid => {
-                    const fd = new FormData(); fd.append('chat_id', cid); fd.append('photo', pic); fd.append('caption', cap);
-                    fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd });
+            if (bots.length > 0 && cids.length > 0) {
+                bots.forEach(botToken => {
+                    cids.forEach(chatId => {
+                        const formData = new FormData();
+                        formData.append('chat_id', chatId);
+                        formData.append('photo', pic);
+                        formData.append('caption', cap);
+                        
+                        fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                            method: 'POST',
+                            body: formData
+                        }).then(res => res.json()).then(data => {
+                            if(!data.ok) console.error("Telegram Error:", data.description);
+                        }).catch(err => console.error("Fetch Error:", err));
+                    });
                 });
-            });
+            }
 
             // جوجل شيت
             if(s.gs) {
@@ -153,14 +166,15 @@
             document.getElementById('bill_details').innerHTML = `الأيدي: ${idV}<br>الوكيل: ${agV}<br>المبلغ: ${usdV}$`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
             document.getElementById('overlay').style.display = 'flex';
-        } catch(e) { alert("خطأ!"); btn.disabled = false; }
+        } catch(e) { 
+            alert("حدث خطأ أثناء الإرسال!"); 
+            btn.disabled = false; 
+        }
     }
 
     function finish(k, w, id) {
         db.ref("MOLOOK_FINAL_ORDERS").child(k).update({ status: 'paid' });
-        // تحديث الشيت (GET)
         if(s.gs) fetch(`${s.gs}?action=UPDATE&ID=${id}`, { mode: 'no-cors' });
-        
         let p = w.replace(/\D/g, '');
         if (p.startsWith('01')) p = '2' + p;
         window.open(`https://wa.me/${p}?text=تم التحويل بنجاح ✅`, '_blank');
