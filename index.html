@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملوك الروقان v25.0</title>
+    <title>ملوك الروقان - النسخة الأصلية</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -12,24 +12,24 @@
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; display: flex; justify-content: center; }
         .container { background: var(--card); border: 2px solid var(--gold); border-radius: 20px; padding: 20px; width: 100%; max-width: 500px; position: relative; box-shadow: 0 0 30px rgba(212,175,55,0.2); }
         
-        /* لوحة الإدارة الكاملة */
+        /* لوحة التحكم */
         #adminPanel { display: none; position: absolute; inset: 0; background: #000; border: 2px solid var(--gold); border-radius: 20px; z-index: 9999; padding: 20px; overflow-y: auto; }
         .admin-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .admin-box h4 { color: var(--gold); margin: 0 0 10px 0; border-bottom: 1px solid #333; }
         
         .order-card { background: #1a1a1a; border-right: 4px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
         .btn-group { display: flex; gap: 5px; margin-top: 8px; }
-        .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; }
-        .btn-wa { background: #25d366; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 2; font-weight: 900; font-family: 'Cairo'; }
-        .btn-del { background: #ff4d4d; color: #fff; border: none; padding: 5px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; }
+        .btn-copy { background: #444; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; font-family: 'Cairo'; }
+        .btn-wa { background: #25d366; color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 2; font-family: 'Cairo'; font-weight: 900; }
+        .btn-del { background: #ff4d4d; color: #fff; border: none; padding: 5px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-size: 11px; }
 
         .header { text-align: center; margin-bottom: 10px; cursor: pointer; }
         .header h1 { color: var(--gold); font-size: 32px; margin: 0; font-weight: 900; }
-        .status-bar { display: flex; justify-content: space-around; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 15px; border: 1px solid var(--gold); margin-bottom: 20px; }
+        .status-bar { display: flex; justify-content: space-around; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--gold); font-size: 14px; }
         
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; color: var(--gold); font-weight: bold; }
-        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; }
+        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: var(--inp); color: #fff; box-sizing: border-box; font-family: 'Cairo'; outline: none; }
         
         .result-box { background: linear-gradient(135deg, #d4af37, #fcf6ba); color: #000; padding: 18px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 24px; margin: 20px 0; }
         .btn-send { width: 100%; padding: 18px; background: var(--gold); border: none; border-radius: 15px; color: #000; font-weight: 900; font-size: 20px; cursor: pointer; }
@@ -42,23 +42,22 @@
 
 <div class="container">
     <div id="adminPanel">
-        <h2 style="color:var(--gold); text-align:center;">إدارة ملوك الروقان</h2>
+        <h2 style="color:var(--gold); text-align:center;">الإدارة</h2>
         <div class="admin-box">
-            <h4>⚙️ الإعدادات الأساسية</h4>
+            <h4>⚙️ الإعدادات</h4>
             <label>سعر الدولار:</label><input type="number" id="c_rv">
             <label>ID السحب:</label><input type="text" id="c_aid">
-            <label>اسم المستلم:</label><input type="text" id="c_aname">
+            <label>المستلم:</label><input type="text" id="c_aname">
             <label>رابط الشيت:</label><input type="text" id="c_gs">
+            <label>Chat IDs:</label><input type="text" id="c_b_ids">
+            <label>بوت 1:</label><input type="text" id="c_b1">
+            <label>بوت 2:</label><input type="text" id="c_b2">
+            <label>بوت 3:</label><input type="text" id="c_b3">
+            <label>بوت 4:</label><input type="text" id="c_b4">
+            <button class="btn-send" onclick="saveSettings()" style="font-size:16px; margin-top:10px;">حفظ ✅</button>
         </div>
-        <div class="admin-box">
-            <h4>🤖 بوتات التلجرام (4)</h4>
-            <input type="text" id="c_b1" placeholder="بوت 1"><input type="text" id="c_b2" placeholder="بوت 2">
-            <input type="text" id="c_b3" placeholder="بوت 3"><input type="text" id="c_b4" placeholder="بوت 4">
-            <label>Chat IDs (فصل بفاصلة):</label><input type="text" id="c_b_ids">
-        </div>
-        <button class="btn-send" onclick="saveSettings()" style="font-size:16px;">حفظ كل الإعدادات ✅</button>
-        <div class="admin-box"><h4>📩 الطلبات الجديدة</h4><div id="ordersList"></div></div>
-        <div class="admin-box"><h4>✅ الأرشيف (تم الدفع)</h4><div id="paidList"></div></div>
+        <div class="admin-box"><h4>📩 طلبات جديدة</h4><div id="ordersList"></div></div>
+        <div class="admin-box"><h4>✅ الأرشيف</h4><div id="paidList"></div></div>
         <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; color:#777; border:none; padding:15px; cursor:pointer;">إغلاق</button>
     </div>
 
@@ -74,7 +73,7 @@
     <div class="form-group"><label>رقم المحفظة</label><input type="text" id="u_wallet"></div>
     <div class="form-group"><label>إثبات السحب</label><input type="file" id="u_pic" accept="image/*"></div>
     
-    <button class="btn-send" onclick="sendOrder()" id="btnSend">إرسال الطلب 🚀</button>
+    <button class="btn-send" onclick="sendOrder()" id="btnSend">تأكيد وإرسال 🚀</button>
 </div>
 
 <div id="overlay">
@@ -82,19 +81,18 @@
         <h2 style="text-align:center;">ملوك الروقان</h2>
         <div id="bill_details" style="margin:20px 0;"></div>
         <div style="background:#000; color:#d4af37; text-align:center; padding:15px; border-radius:12px; font-size:24px; font-weight:900;" id="bill_total">0.00 EGP</div>
-        <button class="btn-send" style="margin-top:20px; background:#000; color:#fff;" onclick="location.reload()">تم ✅</button>
+        <button class="btn-send" style="margin-top:20px; background:#000; color:#fff;" onclick="location.reload()">إغلاق وحفظ ✅</button>
     </div>
 </div>
 
 <script>
-    // بيانات Firebase الخاصة بك
     const firebaseConfig = { apiKey: "AIzaSyD-XYPHc4sEHYqDYrz72KrqxPNPihc0CFA", authDomain: "molook-51d9e.firebaseapp.com", projectId: "molook-51d9e", databaseURL: "https://molook-51d9e-default-rtdb.firebaseio.com/", storageBucket: "molook-51d9e.firebasestorage.app", messagingSenderId: "646971816528", appId: "1:646971816528:web:44c5c4f9bd370963dc6f55" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
     let s = {};
 
-    db.ref("SETTINGS").on('value', (snap) => {
+    db.ref("MOLOOK_SETTINGS").on('value', (snap) => {
         s = snap.val() || {};
         document.getElementById('v_aid').innerText = s.aid || '---';
         document.getElementById('v_aname').innerText = s.aname || '---';
@@ -106,7 +104,7 @@
         document.getElementById('c_aid').value = s.aid || ''; document.getElementById('c_aname').value = s.aname || '';
     });
 
-    db.ref("ORDERS").on('value', (snap) => {
+    db.ref("MOLOOK_ORDERS").on('value', (snap) => {
         const list = document.getElementById('ordersList'), plist = document.getElementById('paidList');
         list.innerHTML = ""; plist.innerHTML = "";
         if(snap.val()) {
@@ -115,10 +113,10 @@
                 const h = `<div class="order-card">
                     ID: ${o.id} | ${o.egp} ج.م<br>${o.wallet}
                     <div class="btn-group">
-                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('تم النسخ')">نسخ</button>
-                        <button class="btn-wa" onclick="finish('${k}','${o.wallet}','${o.id}')">واتساب ✅</button>
+                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${o.wallet}');alert('نسخ بنجاح')">نسخ</button>
+                        <button class="btn-wa" onclick="finishOrder('${k}','${o.wallet}','${o.id}')">واتساب ✅</button>
                     </div>
-                    <button class="btn-del" onclick="db.ref('ORDERS').child('${k}').remove()">حذف</button>
+                    <button class="btn-del" onclick="db.ref('MOLOOK_ORDERS').child('${k}').remove()">حذف</button>
                 </div>`;
                 if(o.status === 'paid') plist.innerHTML += h; else list.innerHTML += h;
             });
@@ -131,7 +129,7 @@
     }
 
     function saveSettings() {
-        db.ref("SETTINGS").set({
+        db.ref("MOLOOK_SETTINGS").set({
             rv: document.getElementById('c_rv').value, aid: document.getElementById('c_aid').value,
             aname: document.getElementById('c_aname').value, gs: document.getElementById('c_gs').value,
             b1: document.getElementById('c_b1').value, b2: document.getElementById('c_b2').value,
@@ -140,9 +138,9 @@
         }).then(() => alert("تم الحفظ ✅"));
     }
 
-    function finish(k, w, id) {
+    function finishOrder(k, w, id) {
         if(s.gs) fetch(`${s.gs}?action=UPDATE&ID=${id}`, { mode: 'no-cors' });
-        db.ref("ORDERS").child(k).update({ status: 'paid' });
+        db.ref("MOLOOK_ORDERS").child(k).update({ status: 'paid' });
         window.open(`https://wa.me/${w.replace(/\D/g,'')}?text=تم التحويل بنجاح ✅`, '_blank');
     }
 
@@ -151,28 +149,32 @@
     async function sendOrder() {
         const idV = document.getElementById('u_id').value, usdV = document.getElementById('u_usd').value, walV = document.getElementById('u_wallet').value, pic = document.getElementById('u_pic').files[0];
         if(!idV || !usdV || !walV || !pic) return alert("أكمل البيانات!");
-        const btn = document.getElementById('btnSend'); btn.disabled = true;
+        
+        const btn = document.getElementById('btnSend'); btn.disabled = true; btn.innerText = "جاري الإرسال...";
         const egp = calculate(), now = new Date(), dS = now.toLocaleDateString('ar-EG');
 
         try {
-            // تلجرام
+            // تلجرام - إرسال الصورة والبيانات لجميع البوتات
             const cap = `👑 طلب جديد\n🆔 ID: ${idV}\n💵 مبلغ: ${usdV}$\n💰 مصري: ${egp}\n📱 رقم: ${walV}`;
-            [s.b1, s.b2, s.b3, s.b4].filter(b => b).forEach(bot => {
+            const botTokens = [s.b1, s.b2, s.b3, s.b4].filter(t => t);
+            botTokens.forEach(token => {
                 s.b_ids.split(',').forEach(cid => {
                     const fd = new FormData(); fd.append('chat_id', cid.trim()); fd.append('photo', pic); fd.append('caption', cap);
-                    fetch(`https://api.telegram.org/bot${bot}/sendPhoto`, { method: 'POST', body: fd });
+                    fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: fd });
                 });
             });
 
-            // شيت جوجل
+            // شيت جوجل - إرسال البيانات
             if(s.gs) fetch(`${s.gs}?action=ADD&id=${idV}&usd=${usdV}&egp=${egp}&wallet=${walV}&date=${dS}`, { mode: 'no-cors' });
 
-            await db.ref("ORDERS").push({ id: idV, egp: egp, wallet: walV, status: 'pending' });
+            // فايربيز - حفظ الطلب
+            await db.ref("MOLOOK_ORDERS").push({ id: idV, egp: egp, wallet: walV, status: 'pending' });
             
-            document.getElementById('bill_details').innerHTML = `ID: ${idV}<br>Amount: ${usdV}$<br>Date: ${dS}`;
+            // عرض الفاتورة
+            document.getElementById('bill_details').innerHTML = `الأيدي: ${idV}<br>المبلغ: ${usdV}$<br>التاريخ: ${dS}`;
             document.getElementById('bill_total').innerText = `${egp} EGP`;
             document.getElementById('overlay').style.display = 'flex';
-        } catch(e) { alert("خطأ!"); btn.disabled = false; }
+        } catch(e) { alert("خطأ في الاتصال!"); btn.disabled = false; }
     }
 </script>
 </body>
